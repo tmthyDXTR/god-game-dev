@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbe6a0fd43e4954fa2d4d8fe3ad300e, type: 3}
+  m_Name: HexMapSettings
+  m_EditorClassIdentifier: Assembly-CSharp::HexGridOverlay.Runtime.HexMapSettings
+  firstTilePosition: {x: -145, y: 74}
+  hexSize: 22.98867
+  gridWidth: 7
+  gridHeight: 7
+  pointyTop: 1
+  rotationX: 0
+  rotationY: 0
+  rotationZ: 0
+  hexBorderColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 0.3
+  borderWidth: 2
+  fillEnabled: 1
+  fillColor:
+    r: 0.10122886
+    g: 0.49795255
+    b: 0.52201253
+    a: 0.08
+  useBiomeColors: 1
+  biomeColors:
+  - r: 0.33796474
+    g: 0.48846954
+    b: 0.098820366
+    a: 0
+  - r: 0.09803921
+    g: 0.3996922
+    b: 0.49019608
+    a: 0
+  biomeSeed: 49
+  showHexGrid: 1
