@@ -57,7 +57,7 @@ MonoBehaviour:
   - q: -2
     r: 2
     s: 0
-    type: 0
+    type: 3
     resources: []
   - q: -2
     r: 3

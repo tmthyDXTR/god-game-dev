@@ -148,6 +148,9 @@ namespace HexGrid
 
         [Header("Map Data")]
         public MapData mapData;
+        [Header("Startup Exploration")]
+        [Tooltip("If true, all tiles will be marked explored after grid generation or map load.")]
+        public bool fullyExploreOnStart = false;
 
         private void Awake()
         {
@@ -160,6 +163,22 @@ namespace HexGrid
             {
                 LoadTileTypesFromMap(mapData);
             }
+            // Optionally mark the entire map as explored at start
+            if (fullyExploreOnStart)
+            {
+                ExploreAllTiles();
+            }
+        }
+
+        // Mark all generated tiles as explored and update their visuals
+        public void ExploreAllTiles()
+        {
+            foreach (var t in tiles.Values)
+            {
+                t.isExplored = true;
+                t.UpdateVisual();
+            }
+            Debug.Log($"HexGridGenerator: Explored all tiles ({tiles.Count})");
         }
 
         public void UpdateLayout()

@@ -1,5 +1,6 @@
 using UnityEngine;
 using HexGrid;
+using GameData;
 
 namespace GodBeast
 {
@@ -8,12 +9,30 @@ namespace GodBeast
     {
         public Vector2Int gridPosition; // Hex grid position
 
+        [Header("Data")]
+        public GameData.GodBeastData data;
+
         private SpriteRenderer spriteRenderer;
 
-        public int sap = 3;
+        // runtime inventory (resource -> amount)
+        private System.Collections.Generic.Dictionary<global::Inventory.ResourceItem, int> inventory = new System.Collections.Generic.Dictionary<global::Inventory.ResourceItem, int>();
 
         private void Awake()
         {
+            // Initialize inventory from ScriptableObject data if provided (minimal, data-driven)
+            if (data != null)
+            {
+                if (!string.IsNullOrEmpty(data.beastName))
+                    gameObject.name = data.beastName;
+                // populate runtime inventory
+                foreach (var rs in data.startingResources)
+                {
+                    if (rs.item == null) continue;
+                    var item = rs.item as global::Inventory.ResourceItem;
+                    inventory[item] = rs.amount;
+                }
+            }
+
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (spriteRenderer == null)
                 spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
@@ -56,10 +75,28 @@ namespace GodBeast
             }
         }
 
-        public void ConsumeSap(int amount)
+
+        // Generic inventory accessors
+        public int GetResourceAmount(global::Inventory.ResourceItem item)
         {
-            sap -= amount;
-            if (sap < 0) sap = 0;
+            if (item == null) return 0;
+            if (inventory.TryGetValue(item, out var v)) return v;
+            return 0;
+        }
+
+        public void ModifyResource(global::Inventory.ResourceItem item, int delta)
+        {
+            if (item == null) return;
+            var cur = GetResourceAmount(item);
+            var next = cur + delta;
+            if (next < 0) next = 0;
+            inventory[item] = next;
+            // Keep nothing else in sync here; systems should use ResourceItem-based APIs
+        }
+
+        public void ConsumeResource(global::Inventory.ResourceItem item, int amount)
+        {
+            ModifyResource(item, -amount);
         }
     }
 }

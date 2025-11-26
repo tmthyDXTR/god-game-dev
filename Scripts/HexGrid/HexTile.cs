@@ -12,9 +12,15 @@ namespace HexGrid
         public Sprite sapIcon;
         private List<GameObject> foodIcons = new List<GameObject>();
         private List<GameObject> sapIcons = new List<GameObject>();
+        // Overlay object used to show infestation using the bone sprite scaled by level
+        private GameObject infestationOverlay = null;
 
         // Resource amounts for each type
         public Dictionary<ResourceType, int> resourceAmounts = new Dictionary<ResourceType, int>();
+
+        // Infestation level for BoneBloom: 0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (becomes Bone tile)
+        [Tooltip("0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (converts to Bone)")]
+        public int InfestationLevel = 0;
 
         // Add resource to tile
         public void AddResource(ResourceType type, int amount)
@@ -100,13 +106,71 @@ namespace HexGrid
                     spriteRenderer.sprite = grassSprite;
                     break;
             }
-            // Dim unexplored tiles
+            // Dim unexplored tiles; otherwise use default white color.
             if (!isExplored)
                 spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, 1f); // dark
             else
                 spriteRenderer.color = Color.white;
+            // Update or create infestation overlay (uses bone sprite)
+            UpdateInfestationOverlay();
             // Update food icons after visual change
             UpdateResourceIcons();
+        }
+
+        // Increase infestation level by amount (default 1). If level reaches 3, convert tile to Bone type.
+        public void IncreaseInfestation(int amount = 1)
+        {
+            if (TileType == HexTileType.Bone)
+                return; // already bone
+            InfestationLevel = Mathf.Clamp(InfestationLevel + amount, 0, 3);
+            if (InfestationLevel >= 3)
+            {
+                TileType = HexTileType.Bone;
+                InfestationLevel = 3;
+            }
+            UpdateVisual();
+        }
+
+        // Create/update a centered overlay using the bone sprite scaled by infestation level
+        private void UpdateInfestationOverlay()
+        {
+            // Remove existing overlay if any
+            if (infestationOverlay != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(infestationOverlay);
+                else
+                    DestroyImmediate(infestationOverlay);
+                infestationOverlay = null;
+            }
+
+            if (InfestationLevel <= 0)
+                return;
+
+            if (boneSprite == null)
+                return; // nothing to show
+
+            // Create overlay object
+            infestationOverlay = new GameObject("InfestationOverlay");
+            infestationOverlay.transform.SetParent(transform);
+            infestationOverlay.transform.localPosition = new Vector3(0f, 0f, -0.05f);
+            infestationOverlay.transform.localRotation = Quaternion.identity;
+            infestationOverlay.transform.localScale = Vector3.one;
+            var sr = infestationOverlay.AddComponent<SpriteRenderer>();
+            sr.sprite = boneSprite;
+            // Ensure overlay draws above the tile but below resource icons
+            int baseOrder = spriteRenderer != null ? spriteRenderer.sortingOrder : 0;
+            sr.sortingOrder = baseOrder + 5;
+
+            // Scale overlay by infestation level (level 1 small -> level 3 large)
+            float scale = 1f;
+            switch (InfestationLevel)
+            {
+                case 1: scale = 0.33f; break;
+                case 2: scale = 0.66f; break;
+                case 3: scale = 1f; break;
+            }
+            infestationOverlay.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
         // Visualize food and sap amount with icons

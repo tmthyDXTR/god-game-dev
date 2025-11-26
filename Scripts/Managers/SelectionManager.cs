@@ -38,6 +38,20 @@ namespace HexGrid
             Instance = this;
         }
 
+        private void Start()
+        {
+            // On game start, explore tiles around the first god-beast so the nearby area is revealed
+            var god = FindFirstObjectByType<GodBeast.GodBeast>();
+            if (god != null && gridGenerator != null)
+            {
+                // Temporarily set SelectedUnit to compute tiles in range without triggering selection visuals
+                SelectedUnit = god;
+                UpdateTilesInRange();
+                // Clear the temporary selection
+                SelectedUnit = null;
+            }
+        }
+
         void Update()
         {
             HandleHover();
@@ -231,6 +245,14 @@ namespace HexGrid
             Debug.Log($"GridGenerator tiles count: {gridGenerator.tiles.Count}");
             var hexes = GetTilesInRange(SelectedUnit.HexCoordinates, 1);
             Debug.Log($"Neighbor hexes count: {hexes.Count}");
+            // Also include and mark the center tile (where the unit stands) as explored
+            if (gridGenerator.tiles.TryGetValue(SelectedUnit.HexCoordinates, out var centerTile))
+            {
+                if (!tilesInRange.Contains(centerTile))
+                    tilesInRange.Add(centerTile);
+                centerTile.isExplored = true;
+                centerTile.UpdateVisual();
+            }
             foreach (var hex in hexes)
             {
                 if (!gridGenerator.tiles.ContainsKey(hex))

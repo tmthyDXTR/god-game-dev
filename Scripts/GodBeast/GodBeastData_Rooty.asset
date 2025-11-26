@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 729db5b4f5a66e943863e3ef5e352fd2, type: 3}
+  m_Name: GodBeastData_Rooty
+  m_EditorClassIdentifier: Assembly-CSharp::GameData.GodBeastData
+  beastName: Rooty
+  startingResources:
+  - item: {fileID: 11400000, guid: 375ad301332e7474abfe3c856422f7d7, type: 2}
+    amount: 100
+  perTurnResource: {fileID: 11400000, guid: 375ad301332e7474abfe3c856422f7d7, type: 2}
+  perTurnAmount: 1

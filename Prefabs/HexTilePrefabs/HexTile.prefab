@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7932798033344189819, guid: 0ee1a607541760e428f29a52542c4c48, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -106,6 +106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HexGrid.HexTile
   foodIcon: {fileID: 1459024109057963326, guid: f1fa55e7a04b2a2448d576159abe68a3, type: 3}
   sapIcon: {fileID: 2534971668043025657, guid: c37dc83d46e1c0e489ae8b9f7aed8080, type: 3}
+  InfestationLevel: 0
   TileType: 0
   isExplored: 0
   grassSprite: {fileID: 7932798033344189819, guid: 0ee1a607541760e428f29a52542c4c48, type: 3}

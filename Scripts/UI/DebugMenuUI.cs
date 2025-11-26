@@ -19,7 +19,7 @@ namespace UI
         public Sprite foodIconSprite;
         public Sprite sapIconSprite;
 
-        private void Start()
+        private void Awake()
         {
             canvas = new GameObject("DebugCanvas").AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;

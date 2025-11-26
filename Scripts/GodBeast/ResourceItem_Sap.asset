@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f764eff9a1007f84bb0a9532a168ce49, type: 3}
+  m_Name: ResourceItem_Sap
+  m_EditorClassIdentifier: Assembly-CSharp::Inventory.ResourceItem
+  resourceId: Sap
+  displayName: Sap
+  icon: {fileID: 2534971668043025657, guid: c37dc83d46e1c0e489ae8b9f7aed8080, type: 3}
