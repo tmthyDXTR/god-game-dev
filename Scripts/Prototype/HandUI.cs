@@ -162,6 +162,8 @@ namespace Prototype.Cards
                 var view = go.GetComponent<CardView>();
                 if (view != null)
                 {
+                    // assign stable logical slot index so layout groups can preserve order
+                    view.slotIndex = i;
                     view.SetCard(card);
                 }
                 else

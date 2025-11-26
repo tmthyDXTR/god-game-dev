@@ -38,6 +38,16 @@ namespace Prototype.Cards
         public bool useLocalPosition = false;
         [Tooltip("Enable verbose debug logging for hover events")]
         public bool debugHover = true;
+        
+        [Header("Bring-To-Front")]
+        [Tooltip("If true, use a temporary Canvas override (overrideSorting) while hovered so the card renders above siblings without changing sibling indices.")]
+        public bool useCanvasOverrideOnHover = true;
+        [Tooltip("Sorting order to apply to the temporary hover Canvas. Higher values render on top.")]
+        public int hoverSortingOrder = 2000;
+        [Tooltip("If true, do not change the card's sibling index while hovered; use Canvas override to render on top instead. If false, SetAsLastSibling() will be used when Canvas override is disabled.")]
+        public bool keepSiblingIndexWhileHovered = true;
+        [Tooltip("If true, restore the original sibling index when hover exits. If false, sibling index will not be restored.")]
+        public bool restoreSiblingOnExit = true;
 
         private RectTransform rt;
         private CardSO card;
@@ -52,8 +62,12 @@ namespace Prototype.Cards
         [SerializeField]
         private Transform visualRoot;
         private Vector3 originalVisualLocalScale;
+        private Quaternion originalVisualLocalRot;
         private Vector3 originalVisualLocalPos;
         private bool baselineCaptured = false;
+        // Logical slot index assigned by the hand spawner to preserve ordering
+        [HideInInspector]
+        public int slotIndex = -1;
 
         private Transform originalParent;
         private int originalSiblingIndex;
@@ -75,6 +89,12 @@ namespace Prototype.Cards
         private const float kMaxHoverOffsetAbs = 100f;
         // the offset value actually used for the current hover (clamped at start)
         private float activeHoverOffset = 0f;
+        
+    // Hover canvas override state (optional)
+    private Canvas hoverCanvas;
+    private bool hoverCanvasCreated = false;
+    private bool hoverCanvasHadOverride = false;
+    private int hoverCanvasOriginalOrder = 0;
 
         private void OnValidate()
         {
@@ -168,6 +188,7 @@ namespace Prototype.Cards
                     {
                         originalVisualLocalScale = visualRoot.localScale;
                         originalVisualLocalPos = visualRoot.localPosition;
+                        originalVisualLocalRot = visualRoot.localRotation;
                     }
                     baselineCaptured = true;
                 }
@@ -333,12 +354,9 @@ namespace Prototype.Cards
                 }
             }
 
-            // bring to front so it renders above siblings (only once per hover)
-            if (!elevated)
-            {
-                transform.SetAsLastSibling();
-                elevated = true;
-            }
+            // Note: Do not change sibling or canvas here. We want the card to remain
+            // at its original logical slot while it animates up. The bring-to-front
+            // action will happen after the enter animation completes.
             if (debugHover && artworkImage != null)
             {
                 Debug.Log($"CardView.StartHover '{name}': artworkIsChildOfRT={artworkImage.rectTransform.IsChildOf(rt)} elevated={elevated}");
@@ -384,6 +402,7 @@ namespace Prototype.Cards
                     {
                         visualRoot.localScale = originalVisualLocalScale;
                         visualRoot.localPosition = originalVisualLocalPos;
+                        visualRoot.localRotation = originalVisualLocalRot;
                     }
                     else
                     {
@@ -396,7 +415,7 @@ namespace Prototype.Cards
             try
             {
                 var parent = transform.parent;
-                if (parent != null)
+                if (parent != null && restoreSiblingOnExit)
                 {
                     if (siblingAfterOnHover != null && siblingAfterOnHover.parent == parent)
                         transform.SetSiblingIndex(siblingAfterOnHover.GetSiblingIndex());
@@ -412,6 +431,19 @@ namespace Prototype.Cards
                 {
                     parentLayoutGroup.enabled = parentLayoutGroupEnabledState;
                     parentLayoutGroup = null;
+                }
+            }
+            catch { }
+            // If we're inside an ArcLayoutGroup, ask it to re-arrange so cards snap back to the curve.
+            try
+            {
+                var arc = GetComponentInParent<ArcLayoutGroup>();
+                if (arc != null)
+                {
+                    // animate the arc rearrange so cards lerp back to their original positions/rotations
+                    float arrangeDur = Mathf.Max(0.06f, hoverDuration * 1.5f);
+                    try { StartCoroutine(arc.AnimateArrange(arrangeDur)); }
+                    catch { try { arc.Arrange(); } catch { } }
                 }
             }
             catch { }
@@ -436,9 +468,15 @@ namespace Prototype.Cards
                     {
                         Vector3 start = visualRoot.localPosition;
                         Vector3 target = entering ? originalVisualLocalPos + new Vector3(0, activeHoverOffset, 0) : originalVisualLocalPos;
+                        // lock X to the start X so only Y changes during hover
+                        target.x = start.x;
+                        // lock X to the start position so we only move vertically while hovered
+                        target.x = start.x;
                         if (debugHover) Debug.Log($"CardView.AnimateHover '{name}' visual start={start} target={target} entering={entering}");
                         Vector3 startScale = visualRoot.localScale;
                         Vector3 targetScale = entering ? originalVisualLocalScale * hoverScale : originalVisualLocalScale;
+                        Quaternion startRot = visualRoot.localRotation;
+                        Quaternion targetRot = entering ? Quaternion.identity : originalVisualLocalRot;
 
                         while (elapsed < duration)
                         {
@@ -447,20 +485,26 @@ namespace Prototype.Cards
                             t = t * t * (3f - 2f * t);
                             visualRoot.localPosition = Vector3.Lerp(start, target, t);
                             visualRoot.localScale = Vector3.Lerp(startScale, targetScale, t);
+                            visualRoot.localRotation = Quaternion.Slerp(startRot, targetRot, t);
                             yield return null;
                         }
 
                         visualRoot.localPosition = target;
                         visualRoot.localScale = targetScale;
+                        visualRoot.localRotation = targetRot;
                     }
                     else
                     {
                         Vector3 start = rt.localPosition;
                         // Use the captured baseline as the hover target so repeated enters don't accumulate
                         Vector3 target = entering ? originalLocalPos + new Vector3(0, activeHoverOffset, 0) : originalLocalPos;
+                        // lock X to avoid unintended horizontal movement
+                        target.x = start.x;
                         if (debugHover) Debug.Log($"CardView.AnimateHover '{name}' useLocal start={start} target={target} entering={entering}");
                         Vector3 startScale = rt.localScale;
                         Vector3 targetScale = entering ? originalLocalScale * hoverScale : originalLocalScale;
+                        Quaternion startRot = rt.localRotation;
+                        Quaternion targetRot = entering ? Quaternion.identity : originalVisualLocalRot;
 
                         while (elapsed < duration)
                         {
@@ -469,11 +513,13 @@ namespace Prototype.Cards
                             t = t * t * (3f - 2f * t);
                             rt.localPosition = Vector3.Lerp(start, target, t);
                             rt.localScale = Vector3.Lerp(startScale, targetScale, t);
+                            rt.localRotation = Quaternion.Slerp(startRot, targetRot, t);
                             yield return null;
                         }
 
                         rt.localPosition = target;
                         rt.localScale = targetScale;
+                        rt.localRotation = targetRot;
                     }
             }
                 else
@@ -487,6 +533,8 @@ namespace Prototype.Cards
                         if (debugHover) Debug.Log($"CardView.AnimateHover '{name}' visual(start anchored mode) start={start} target={target} entering={entering}");
                         Vector3 startScale = visualRoot.localScale;
                         Vector3 targetScale = entering ? originalVisualLocalScale * hoverScale : originalVisualLocalScale;
+                        Quaternion startRot = visualRoot.localRotation;
+                        Quaternion targetRot = entering ? Quaternion.identity : originalVisualLocalRot;
 
                         while (elapsed < duration)
                         {
@@ -495,20 +543,26 @@ namespace Prototype.Cards
                             t = t * t * (3f - 2f * t);
                             visualRoot.localPosition = Vector3.Lerp(start, target, t);
                             visualRoot.localScale = Vector3.Lerp(startScale, targetScale, t);
+                            visualRoot.localRotation = Quaternion.Slerp(startRot, targetRot, t);
                             yield return null;
                         }
 
                         visualRoot.localPosition = target;
                         visualRoot.localScale = targetScale;
+                        visualRoot.localRotation = targetRot;
                     }
                     else
                     {
                         Vector2 start = rt.anchoredPosition;
                         // Use the captured baseline as the hover target so repeated enters don't accumulate
                         Vector2 target = entering ? originalAnchoredPos + new Vector2(0, activeHoverOffset) : originalAnchoredPos;
+                        // lock X component so hover only affects Y
+                        target.x = start.x;
                         if (debugHover) Debug.Log($"CardView.AnimateHover '{name}' anchored start={start} target={target} entering={entering}");
                         Vector3 startScale = rt.localScale;
                         Vector3 targetScale = entering ? originalLocalScale * hoverScale : originalLocalScale;
+                        Quaternion startRot = rt.localRotation;
+                        Quaternion targetRot = entering ? Quaternion.identity : originalVisualLocalRot;
 
                         while (elapsed < duration)
                         {
@@ -517,15 +571,26 @@ namespace Prototype.Cards
                             t = t * t * (3f - 2f * t);
                             rt.anchoredPosition = Vector2.Lerp(start, target, t);
                             rt.localScale = Vector3.Lerp(startScale, targetScale, t);
+                            rt.localRotation = Quaternion.Slerp(startRot, targetRot, t);
                             yield return null;
                         }
 
                         rt.anchoredPosition = target;
                         rt.localScale = targetScale;
+                        rt.localRotation = targetRot;
                     }
             }
 
-            if (entering) isLifted = true; else isLifted = false;
+            if (entering)
+            {
+                // mark lifted and bring to front now that animation completed
+                isLifted = true;
+                try { BringToFrontImmediate(); } catch { }
+            }
+            else
+            {
+                isLifted = false;
+            }
             activeAnimationEntering = false;
 
             // on exit, restore sibling
@@ -534,7 +599,7 @@ namespace Prototype.Cards
                 try
                 {
                     var parent = transform.parent;
-                    if (parent != null)
+                    if (parent != null && restoreSiblingOnExit)
                     {
                         if (siblingAfterOnHover != null && siblingAfterOnHover.parent == parent)
                             transform.SetSiblingIndex(siblingAfterOnHover.GetSiblingIndex());
@@ -557,6 +622,22 @@ namespace Prototype.Cards
                 elevated = false;
             }
 
+            // After exit animation completes, ensure the arc reflows (animated) so children lerp
+            if (!entering)
+            {
+                try
+                {
+                    var arc = GetComponentInParent<ArcLayoutGroup>();
+                    if (arc != null)
+                    {
+                        float arrangeDur = Mathf.Max(0.06f, hoverDuration * 1.5f);
+                        try { StartCoroutine(arc.AnimateArrange(arrangeDur)); }
+                        catch { try { arc.Arrange(); } catch { } }
+                    }
+                }
+                catch { }
+            }
+
             // debug final state
             if (debugHover)
             {
@@ -566,7 +647,71 @@ namespace Prototype.Cards
             // cancel watchdog if exit completed normally
             if (watchdogCoroutine != null) { StopCoroutine(watchdogCoroutine); watchdogCoroutine = null; }
 
+            // restore any Canvas override we applied for hover
+            try
+            {
+                if (hoverCanvas != null)
+                {
+                    if (debugHover) Debug.Log($"CardView.RestoreHoverCanvas '{name}': hoverCanvasCreated={hoverCanvasCreated} hadOverride={hoverCanvasHadOverride} originalOrder={hoverCanvasOriginalOrder}");
+                    if (hoverCanvasCreated)
+                    {
+                        Destroy(hoverCanvas);
+                    }
+                    else
+                    {
+                        hoverCanvas.overrideSorting = hoverCanvasHadOverride;
+                        hoverCanvas.sortingOrder = hoverCanvasOriginalOrder;
+                    }
+                    hoverCanvas = null;
+                    hoverCanvasCreated = false;
+                }
+            }
+            catch { }
+
             animCoroutine = null;
+        }
+
+        private void BringToFrontImmediate()
+        {
+            if (elevated) return;
+            if (debugHover) Debug.Log($"CardView.BringToFrontImmediate '{name}': useCanvas={useCanvasOverrideOnHover} hoverOrder={hoverSortingOrder}");
+            if (useCanvasOverrideOnHover)
+            {
+                try
+                {
+                    hoverCanvas = GetComponent<Canvas>();
+                    if (hoverCanvas != null)
+                    {
+                        hoverCanvasHadOverride = hoverCanvas.overrideSorting;
+                        hoverCanvasOriginalOrder = hoverCanvas.sortingOrder;
+                    }
+                    else
+                    {
+                        hoverCanvas = gameObject.AddComponent<Canvas>();
+                        hoverCanvasCreated = true;
+                        hoverCanvasHadOverride = false;
+                        hoverCanvasOriginalOrder = 0;
+                    }
+                    hoverCanvas.overrideSorting = true;
+                    hoverCanvas.sortingOrder = hoverSortingOrder;
+                }
+                catch { }
+            }
+            else
+            {
+                try { transform.SetAsLastSibling(); } catch { }
+            }
+            elevated = true;
+        }
+
+        private System.Collections.IEnumerator DelayedArrange(ArcLayoutGroup arc)
+        {
+            // wait one frame to let layout/sibling updates settle, then re-arrange
+            yield return new WaitForEndOfFrame();
+            if (arc != null)
+            {
+                try { arc.Arrange(); } catch { }
+            }
         }
     }
 }
