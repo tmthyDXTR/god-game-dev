@@ -312,13 +312,18 @@ MonoBehaviour:
   hoverOffset: 100
   useRelativeHoverOffset: 0
   hoverOffsetPercent: 0.2
-  hoverDuration: 0.12
+  hoverDuration: 0.05
   hoverScale: 1.1
-  hoverEnterDelay: 0.04
-  hoverExitDelay: 0.2
-  useLocalPosition: 0
+  hoverEnterDelay: 0.05
+  hoverExitDelay: 0.05
+  useLocalPosition: 1
   debugHover: 1
+  useCanvasOverrideOnHover: 0
+  hoverSortingOrder: 2000
+  keepSiblingIndexWhileHovered: 1
+  restoreSiblingOnExit: 1
   visualRoot: {fileID: 0}
+  slotIndex: -1
 --- !u!1 &8179943184854460736
 GameObject:
   m_ObjectHideFlags: 0

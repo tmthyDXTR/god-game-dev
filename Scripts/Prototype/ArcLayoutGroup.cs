@@ -87,6 +87,14 @@ namespace Prototype.Cards
                 float y = Mathf.Cos(angleRad) * radius;
 
                 RectTransform crt = child as RectTransform;
+                // If the child is currently lifted (hovered), leave it alone so
+                // hover animations are not overridden by layout reflow.
+                var cv = child.GetComponent<CardView>();
+                if (cv != null && cv.IsLifted)
+                {
+                    continue;
+                }
+
                 if (crt != null)
                 {
                     crt.anchoredPosition = new Vector2(x, y);
@@ -114,6 +122,9 @@ namespace Prototype.Cards
                 {
                     var child = children[i];
                     if (child == null) continue;
+                    var cv = child.GetComponent<CardView>();
+                    // avoid reordering a child that's currently lifted
+                    if (cv != null && cv.IsLifted) continue;
                     try { child.SetSiblingIndex(i); } catch { }
                 }
             }
@@ -154,6 +165,24 @@ namespace Prototype.Cards
                 float y = Mathf.Cos(angleRad) * radius;
                 Transform child = children[i];
                 RectTransform crt = child as RectTransform;
+                var cv = child.GetComponent<CardView>();
+                // If the child is lifted, keep its current transform as the
+                // animation target so it won't be snapped back while hovered.
+                if (cv != null && cv.IsLifted)
+                {
+                    if (crt != null)
+                    {
+                        targetPositions[i] = crt.localPosition;
+                        targetRotations[i] = crt.localRotation;
+                    }
+                    else
+                    {
+                        targetPositions[i] = child.localPosition;
+                        targetRotations[i] = child.localRotation;
+                    }
+                    continue;
+                }
+
                 if (crt != null)
                 {
                     targetPositions[i] = new Vector3(x, y, crt.localPosition.z);
@@ -248,6 +277,8 @@ namespace Prototype.Cards
                 {
                     var child = children[i];
                     if (child == null) continue;
+                    var cv = child.GetComponent<CardView>();
+                    if (cv != null && cv.IsLifted) continue;
                     try { child.SetSiblingIndex(i); } catch { }
                 }
             }
