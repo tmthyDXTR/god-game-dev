@@ -312,7 +312,8 @@ MonoBehaviour:
   hoverOffset: 100
   useRelativeHoverOffset: 0
   hoverOffsetPercent: 0.2
-  hoverDuration: 0.05
+  hoverEnterDuration: 0.12
+  hoverExitDuration: 0.01
   hoverScale: 1.1
   hoverEnterDelay: 0.05
   hoverExitDelay: 0.05
@@ -324,6 +325,8 @@ MonoBehaviour:
   restoreSiblingOnExit: 1
   visualRoot: {fileID: 0}
   slotIndex: -1
+  testDrawParent: {fileID: 0}
+  testDiscardParent: {fileID: 0}
 --- !u!1 &8179943184854460736
 GameObject:
   m_ObjectHideFlags: 0
