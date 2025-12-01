@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace HexGrid
 {
@@ -17,6 +18,13 @@ namespace HexGrid
         public ISelectable SelectedUnit { get; private set; }
 
         public HexGridGenerator gridGenerator;
+
+        public bool IsPointerOverUI => isPointerOverUI;
+        private bool isPointerOverUI = false;
+
+        [Header("UI Layer")]
+        [Tooltip("Layer mask used to detect UI elements (e.g. card prefabs). Set to your UI layer, e.g. layer 5.")]
+        public LayerMask uiLayerMask = 1 << 5;
 
         [Header("Selection Layers")]
         [Tooltip("Layer mask used to detect selectable units (units layer)")]
@@ -54,6 +62,7 @@ namespace HexGrid
 
         void Update()
         {
+            UpdatePointerOverUI();
             HandleHover();
             HandleSelect();
         }
@@ -107,6 +116,15 @@ namespace HexGrid
 
         void HandleHover()
         {
+            // If pointer is over UI, clear any hover highlight and skip hover logic
+            if (IsPointerOverUI)
+            {
+                if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
+                    SetTileHighlight(hoveredTile, normalColor);
+                hoveredTile = null;
+                return;
+            }
+
             HexTile tile = RaycastTile();
             // Only override color if not in tilesInRange
             if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
@@ -123,21 +141,62 @@ namespace HexGrid
             if (mouse != null)
             {
                 if (mouse.leftButton.wasPressedThisFrame)
-                    TrySelectAtPointer();
+                {
+                    if (!IsPointerOverUI)
+                        TrySelectAtPointer();
+                }
                 if (mouse.rightButton.wasPressedThisFrame)
-                    DeselectAll();
+                {
+                    if (!IsPointerOverUI)
+                        DeselectAll();
+                }
             }
 #else
             if (Input.GetMouseButtonDown(0))
             {
-                TrySelectAtPointer();
+                if (!IsPointerOverUI)
+                    TrySelectAtPointer();
             }
             if (Input.GetMouseButtonDown(1))
             {
-                DeselectAll();
+                if (!IsPointerOverUI)
+                    DeselectAll();
             }
 
 #endif
+        }
+
+        void UpdatePointerOverUI()
+        {
+            bool overUI = false;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                overUI = true;
+            }
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            else
+            {
+                var mouse = UnityEngine.InputSystem.Mouse.current;
+                if (mouse != null)
+                {
+                    Vector2 mousePos = mouse.position.ReadValue();
+                    Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, -Camera.main.transform.position.z));
+                    var hits = Physics2D.RaycastAll(worldPos, Vector2.zero, Mathf.Infinity, uiLayerMask);
+                    if (hits != null && hits.Length > 0)
+                        overUI = true;
+                }
+            }
+#else
+            else
+            {
+                Vector2 mousePos = Input.mousePosition;
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, -Camera.main.transform.position.z));
+                var hits = Physics2D.RaycastAll(worldPos, Vector2.zero, Mathf.Infinity, uiLayerMask);
+                if (hits != null && hits.Length > 0)
+                    overUI = true;
+            }
+#endif
+            isPointerOverUI = overUI;
         }
 
         void DeselectAll()

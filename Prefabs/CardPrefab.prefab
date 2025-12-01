@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5783696620031720449}
   - component: {fileID: 1987553199581500504}
   - component: {fileID: 1133048591129722482}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 4904786626922113918}
   - component: {fileID: 8348167566845817627}
   - component: {fileID: 2701176627446911646}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: CardZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -222,7 +222,9 @@ GameObject:
   - component: {fileID: 4053860046791339700}
   - component: {fileID: 1452233467600753460}
   - component: {fileID: 6200545241268574128}
-  m_Layer: 0
+  - component: {fileID: 7933636407336137321}
+  - component: {fileID: 1364111602674731962}
+  m_Layer: 5
   m_Name: CardPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,21 +314,47 @@ MonoBehaviour:
   hoverOffset: 100
   useRelativeHoverOffset: 0
   hoverOffsetPercent: 0.2
+  useAbsoluteHoverY: 1
+  hoverTargetY: 1380
   hoverEnterDuration: 0.12
-  hoverExitDuration: 0.01
+  hoverExitDuration: 0.001
   hoverScale: 1.1
+  dragScale: 1.5
   hoverEnterDelay: 0.05
   hoverExitDelay: 0.05
   useLocalPosition: 1
-  debugHover: 1
+  debugHover: 0
   useCanvasOverrideOnHover: 0
   hoverSortingOrder: 2000
   keepSiblingIndexWhileHovered: 1
   restoreSiblingOnExit: 1
   visualRoot: {fileID: 0}
   slotIndex: -1
-  testDrawParent: {fileID: 0}
-  testDiscardParent: {fileID: 0}
+--- !u!225 &7933636407336137321
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7867924441779571985}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1364111602674731962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7867924441779571985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01d58fcbca337224c905195442ab3b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Prototype.Cards.DraggableCard
+  enabledDebug: 0
 --- !u!1 &8179943184854460736
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,7 +366,7 @@ GameObject:
   - component: {fileID: 932457401994577491}
   - component: {fileID: 4663311882026791564}
   - component: {fileID: 568019211000265799}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: CardText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -476,7 +504,7 @@ GameObject:
   - component: {fileID: 7289539401341438736}
   - component: {fileID: 2738353573930052234}
   - component: {fileID: 265633872962765047}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: CardName
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -24,12 +24,18 @@ namespace Prototype.Cards
         [Range(0f, 1f)]
         [Tooltip("Relative fraction of the card height to use as the hover offset (0..1). Used when `useRelativeHoverOffset` is true.")]
         public float hoverOffsetPercent = 0.2f;
+        [Tooltip("When enabled, hover will animate to this absolute Y value (in the animated transform's local/anchored space) instead of using an offset from the original position.")]
+        public bool useAbsoluteHoverY = false;
+        [Tooltip("Target absolute Y position to hover to when `useAbsoluteHoverY` is enabled. Interpreted in the animated transform's local space (or anchored units when anchoredPosition is used).")]
+        public float hoverTargetY = 1300f;
         [Tooltip("Hover animation duration when pointer enters (seconds)")]
         public float hoverEnterDuration = 0.12f;
         [Tooltip("Hover animation duration when pointer exits (seconds)")]
         public float hoverExitDuration = 0.12f;
         [Tooltip("Optional scale applied on hover")]
         public float hoverScale = 1.05f;
+        [Tooltip("Scale applied on drag")]
+        public float dragScale = 1.33f;
         [Tooltip("Small enter delay to avoid flicker from quick pointer moves")]
         public float hoverEnterDelay = 0.04f;
         [Tooltip("Small exit delay to debounce rapid exit/enter flicker")]
@@ -165,44 +171,11 @@ namespace Prototype.Cards
         }
 
         public CardSO GetCard() => card;
-
-        [Header("Testing (Inspector)")]
-        [Tooltip("Optional parent Transform to move the card into when using the 'Draw' inspector button.")]
-        public Transform testDrawParent;
-        [Tooltip("Optional parent Transform to move the card into when using the 'Discard' inspector button.")]
-        public Transform testDiscardParent;
-
-        // Move this card into the configured draw parent (or activate it) for testing.
-        public void InspectorDraw()
+        // Public helper to restore hover/position state from external callers (e.g., drag end).
+        public void RestoreFromDrag()
         {
-            ArcLayoutGroup arc = GetComponentInParent<ArcLayoutGroup>();
-            if (testDrawParent != null)
-            {
-                transform.SetParent(testDrawParent, false);
-            }
-            gameObject.SetActive(true);
-            // Reset baseline so hover starts from current transform
-            baselineCaptured = false;
-            // Ask parent arc layout to arrange if present
-            try { arc?.Arrange(); } catch { }
-        }
-
-        // Move this card into the configured discard parent (or deactivate it) for testing.
-        public void InspectorDiscard()
-        {
-            ArcLayoutGroup arc = GetComponentInParent<ArcLayoutGroup>();
-            testDiscardParent = GameObject.Find("DiscardPile")?.transform;
-            if (testDiscardParent == null)
-            {
-                Debug.LogWarning("No DiscardPile found in the scene. Please create a GameObject named 'DiscardPile' to use as the discard parent.");
-            }
-            else
-            {
-                transform.SetParent(testDiscardParent, false);
-                // Optionally hide to simulate discard
-                gameObject.SetActive(false);
-                try { arc?.Arrange(); } catch { }
-            }
+            if (debugHover) Debug.Log($"CardView.RestoreFromDrag '{name}': restoring hover/position immediately");
+            ResetPositionImmediate();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -338,6 +311,7 @@ namespace Prototype.Cards
 
         private void StartHover()
         {
+            // BringToFrontImmediate();
             // determine and freeze the effective hover offset we'll use for this hover
             if (useRelativeHoverOffset && rt != null)
             {
@@ -511,8 +485,30 @@ namespace Prototype.Cards
 
             // Determine start/target positions (use Vector3 for a unified approach)
             Vector3 startPos = writingAnchored ? (Vector3)rt.anchoredPosition : target.localPosition;
-            Vector3 desiredPos = entering ? (target == visualRoot ? originalVisualLocalPos : originalLocalPos) + new Vector3(0, activeHoverOffset, 0)
-                                          : (target == visualRoot ? originalVisualLocalPos : originalLocalPos);
+
+            // baseOriginal is the captured baseline for the transform we're animating
+            Vector3 baseOriginal = (target == visualRoot) ? originalVisualLocalPos : originalLocalPos;
+
+            // Compute desired position: either an absolute Y (if requested) or original + offset when entering.
+            Vector3 desiredPos = baseOriginal;
+            if (entering)
+            {
+                if (useAbsoluteHoverY)
+                {
+                    // Interpret hoverTargetY in the animated transform's local/anchored space.
+                    desiredPos.y = hoverTargetY;
+                }
+                else
+                {
+                    desiredPos.y = baseOriginal.y + activeHoverOffset;
+                }
+            }
+            else
+            {
+                // Exiting always returns to baseline
+                desiredPos = baseOriginal;
+            }
+
             // preserve X component from start to avoid horizontal drift
             desiredPos.x = startPos.x;
 
@@ -626,7 +622,7 @@ namespace Prototype.Cards
             }
             else
             {
-                Debug.LogWarning($"CardView.BringToFrontImmediate '{name}': bringing to front without Canvas override may not work correctly depending on parent hierarchy!");
+                if (debugHover) Debug.LogWarning($"CardView.BringToFrontImmediate '{name}': bringing to front without Canvas override may not work correctly depending on parent hierarchy!");
                 try { transform.SetAsLastSibling(); } catch { }
             }
             elevated = true;

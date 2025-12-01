@@ -7,6 +7,22 @@ namespace HexGrid
 
     public class HexTile : MonoBehaviour
     {
+        // Simple population tracking for prototype (number of agents currently on this tile)
+        [Tooltip("Number of population agents currently on this tile (managed by PopulationManager)")]
+        public int populationCount = 0;
+
+        // Called by the population system when an agent arrives
+        public void OnPopulationEnter(object agent)
+        {
+            populationCount++;
+        }
+
+        // Called by the population system when an agent leaves
+        public void OnPopulationLeave(object agent)
+        {
+            populationCount = Mathf.Max(0, populationCount - 1);
+        }
+
         [Header("Resource Icons")]
         public Sprite foodIcon;
         public Sprite sapIcon;

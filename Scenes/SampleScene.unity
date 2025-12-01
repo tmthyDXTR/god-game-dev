@@ -168,6 +168,9 @@ MonoBehaviour:
   selectColor: {r: 1, g: 0.45844096, b: 0, a: 0.7}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   gridGenerator: {fileID: 1255198198}
+  uiLayerMask:
+    serializedVersion: 2
+    m_Bits: 32
   unitsLayerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -931,7 +934,7 @@ MonoBehaviour:
   origin: {x: 0, y: 0}
   tileScale: {x: 0.4, y: 0.4, z: 1}
   mapData: {fileID: 11400000, guid: a6ed55689c4f0ce4689433161a54d7d7, type: 2}
-  fullyExploreOnStart: 0
+  fullyExploreOnStart: 1
 --- !u!4 &1255198199
 Transform:
   m_ObjectHideFlags: 0
@@ -1025,14 +1028,14 @@ RectTransform:
   m_GameObject: {fileID: 1781370164}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.33, y: 0.33, z: 0.33}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1977006515}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -226}
+  m_AnchoredPosition: {x: 0, y: -850}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1781370166
@@ -1085,13 +1088,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e072a83619e5454b88c66643cb1caeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Prototype.Cards.ArcLayoutGroup
-  arcAngle: 60
-  radius: 600
+  arcAngle: 30
+  radius: 1300
   tiltChildren: 1
   tiltMultiplier: 0.6
   centered: 1
   autoArrange: 1
   reorderSiblings: 1
+--- !u!1 &1886782077
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1886782078}
+  m_Layer: 0
+  m_Name: DiscardPile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1886782078
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886782077}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1977006511
 GameObject:
   m_ObjectHideFlags: 0
@@ -1209,3 +1243,4 @@ SceneRoots:
   - {fileID: 1445173206}
   - {fileID: 405853129}
   - {fileID: 438890053}
+  - {fileID: 1886782078}
