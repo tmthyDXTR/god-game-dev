@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd6507ca5c128b24b94b6a31857a60be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexGrid.HexTile
+  populationCount: 0
   foodIcon: {fileID: 1459024109057963326, guid: f1fa55e7a04b2a2448d576159abe68a3, type: 3}
   sapIcon: {fileID: 2534971668043025657, guid: c37dc83d46e1c0e489ae8b9f7aed8080, type: 3}
   InfestationLevel: 0

@@ -1,14 +1,12 @@
 <link rel="stylesheet" href="assets/site.css">
 
-# GOD — Development Changelog (Retro Dev Blog)
-
-_This page is a development changelog exported as a retro-style dev blog. Built from the repository changelog._
+# GOD — Development Changelog 
 
 ---
 
 **Recent Changes (Assets/)**
 
-- **2025-12-01:** (local) — "prototype: population / worshiper system"
+- **2025-12-01:**  — "prototype: population / worshiper system"
   - Added a minimal population "worshiper" prototype under `Assets/Scripts/Prototype/`:
     - `PopulationAgent.cs` — lightweight agent that can idle-wander inside a tile or move between tiles. Supports `StartMovement()` to begin inter-tile movement later.
     - `PopulationManager.cs` — runtime pooling manager for agents, runtime-created tiny black sprite (no prefab required), spawn API `SpawnAgent(tile, stayOnTile=true)`, `StartAgentMovement(agent)`, and neighbor selection via `HexGridGenerator.tiles`.
@@ -39,5 +37,3 @@ _This page is a development changelog exported as a retro-style dev blog. Built 
   - Initial import of project assets and tooling; added core prefabs, hex tile assets, TextMesh Pro resources and supporting URP settings.
 
 ---
-
-*Rendered with a retro 90s visual theme. Images: drop PNGs into `docs/assets/` and reference them with relative paths `assets/your.png`.*
