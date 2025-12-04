@@ -6,6 +6,9 @@
 
 **Recent Changes (Assets/)**
 
+- **2025-12-04:**  — "gh pages deplay test"
+
+
 - **2025-12-01:**  — "prototype: population / worshiper system"
   - Added a minimal population "worshiper" prototype under `Assets/Scripts/Prototype/`:
     - `PopulationAgent.cs` — lightweight agent that can idle-wander inside a tile or move between tiles. Supports `StartMovement()` to begin inter-tile movement later.
