@@ -16,6 +16,8 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    outputs:
+      page_artifact: ${{ steps.upload.outputs.artifact_id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,6 +47,7 @@ jobs:
           pandoc public/index.md -o public/index.html --metadata title="GOD — Development Changelog"
 
       - name: Upload GitHub Pages artifact
+        id: upload
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
@@ -55,6 +58,21 @@ jobs:
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "github-actions"
+          # compute the short SHA locally so it's available in this step
+          SHORT=$(git rev-parse --short=7 HEAD)
           git add docs/index.md
           git commit -m "chore(changelog): inject latest commit $SHORT into changelog" || echo "No changes to commit"
           git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} main
+
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy-pages
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_id: ${{ needs.build-and-deploy.outputs.page_artifact }}
