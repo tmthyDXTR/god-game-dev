@@ -1,0 +1,25 @@
+{
+  "name": "com.hexgridoverlay.ui",
+  "version": "1.0.0",
+  "displayName": "Hex Grid Overlay",
+  "description": "A flexible hexagonal grid overlay system for Unity UI with runtime editor. Supports both pointy-top and flat-top orientations, isometric rotation, and real-time configuration.",
+  "unity": "2021.3",
+  "keywords": [
+    "hex",
+    "hexagon",
+    "grid",
+    "overlay",
+    "ui",
+    "map",
+    "isometric",
+    "editor"
+  ],
+  "author": {
+    "name": "supacoda",
+    "url": ""
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6",
+    "com.unity.inputsystem": "1.0.0"
+  }
+}
