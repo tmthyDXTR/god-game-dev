@@ -6,7 +6,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-04:**  — "gh pages deplay test"
+- **2025-12-04:**  — "gh pages deplay test2"
 
 
 - **2025-12-01:**  — "prototype: population / worshiper system"
