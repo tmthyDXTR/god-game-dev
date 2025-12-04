@@ -6,10 +6,9 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-04:** `{{COMMIT_SHA}}`  — "gh pages deployment action to automate changelog gh page creation"
+- **2025-12-04:** `{{COMMIT_SHA}}`  — "gh pages deployment action to automate changelog sha insertion"
 
-
-- **2025-12-01:**  — "prototype: population / worshiper system"
+- **2025-12-01:** `62a4364`  — "prototype: population / worshiper system"
   - Added a minimal population "worshiper" prototype under `Assets/Scripts/Prototype/`:
     - `PopulationAgent.cs` — lightweight agent that can idle-wander inside a tile or move between tiles. Supports `StartMovement()` to begin inter-tile movement later.
     - `PopulationManager.cs` — runtime pooling manager for agents, runtime-created tiny black sprite (no prefab required), spawn API `SpawnAgent(tile, stayOnTile=true)`, `StartAgentMovement(agent)`, and neighbor selection via `HexGridGenerator.tiles`.

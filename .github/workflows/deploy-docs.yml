@@ -19,18 +19,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Insert short commit SHA into docs changelog
         run: |
           SHORT=${GITHUB_SHA:0:7}
           FILE=docs/index.md
           if grep -q '{{COMMIT_SHA}}' "$FILE"; then
-            echo "Replacing placeholder with commit $SHORT in $FILE"
             sed -i "s/{{COMMIT_SHA}}/$SHORT/" "$FILE"
+            echo "Commit SHA injected."
           else
-            echo "No commit SHA placeholder found; skipping injection."
+            echo "No placeholder found."
           fi
 
-      - name: Copy site files to public/
+      - name: Copy site files
         run: |
           mkdir -p public
           cp -r docs/* public/
@@ -45,3 +46,13 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
+
+      - name: Commit updated changelog back to repo
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "github-actions"
+          git add docs/index.md
+          git commit -m "chore(changelog): inject latest commit $SHORT into changelog" || echo "No changes to commit"
+          git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }} main
