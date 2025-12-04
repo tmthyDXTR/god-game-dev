@@ -6,7 +6,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-04:** `{{COMMIT_SHA}}`  — "gh pages deployment action to automate changelog sha insertion"
+- **2025-12-04:** `80853e8`  — "gh pages deployment action to automate changelog sha insertion"
 
 - **2025-12-01:** `62a4364`  — "prototype: population / worshiper system"
   - Added a minimal population "worshiper" prototype under `Assets/Scripts/Prototype/`:
