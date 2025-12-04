@@ -1,11 +1,10 @@
-/* Retro 90s devblog CSS - pixel/CRT vibe */
 :root{
   --bg:#071019; /* deep navy */
   --panel:#091623; /* slightly lighter */
   --accent:#39ff14; /* neon green */
   --muted:#9db0c6;
   --paper:#0f2130;
-  --mono: 'Courier New', Courier, monospace;
+  --mono: 'Ubuntu Mono', Courier, monospace;
 }
 
 html,body{height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#021018);font-family:var(--mono);color:var(--muted);}
@@ -34,7 +33,6 @@ a{color:#8cf7a3}
 /* faint scanline effect */
 body::after{content:'';position:fixed;left:0;right:0;top:0;bottom:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);background-size:100% 3px;mix-blend-mode:overlay}
 
-/* slight pixel font feel by adjusting letter spacing for headings */
 h1{letter-spacing:2px}
 
 @media (max-width:720px){.container{margin:8px;padding:12px}}
