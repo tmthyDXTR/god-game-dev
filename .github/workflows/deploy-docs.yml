@@ -24,8 +24,12 @@ jobs:
         run: |
           mkdir public
           cp -r docs/* public/
-          # If you generate the site, do it here instead of just copying
-          # e.g. static site generator build step
+
+      - name: Convert index.md to index.html
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          pandoc public/index.md -o public/index.html --metadata title="GOD — Development Changelog"
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
