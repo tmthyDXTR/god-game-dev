@@ -6,7 +6,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-04:**  — "gh pages deplay test2"
+- **2025-12-04:** `{{COMMIT_SHA}}`  — "gh pages deployment action to automate changelog gh page creation"
 
 
 - **2025-12-01:**  — "prototype: population / worshiper system"

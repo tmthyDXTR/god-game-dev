@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -19,10 +19,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Copy site files
+      - name: Insert short commit SHA into docs changelog
         run: |
-          mkdir public
+            SHORT=${GITHUB_SHA:0:7}
+            FILE=docs/index.md
+            if grep -q '{{COMMIT_SHA}}' "$FILE"; then
+              echo "Replacing placeholder with commit $SHORT in $FILE"
+              sed -i "s/{{COMMIT_SHA}}/$SHORT/" "$FILE"
+            else
+              echo "No commit SHA placeholder found; skipping injection."
+            fi
+
+      - name: Copy site files to public/
+        run: |
+          mkdir -p public
           cp -r docs/* public/
 
       - name: Convert index.md to index.html
@@ -31,31 +41,10 @@ jobs:
           sudo apt-get install -y pandoc
           pandoc public/index.md -o public/index.html --metadata title="GOD — Development Changelog"
 
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          fetch-depth: 0
-      - name: Deploy docs folder to gh-pages
+      - name: Deploy public/ to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          # explicitly provide the workflow token to ensure the action can push
           personal_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          publish_dir: ./public
           publish_branch: gh-pages
           keep_files: false
-
-      - name: Inject short commit SHA into docs changelog
-        if: success()
-        run: |
-          # Insert the short commit SHA (7 chars) into the first changelog entry
-          SHORT=${GITHUB_SHA:0:7}
-          FILE=docs/index.md
-          echo "Injecting commit $SHORT into $FILE (working copy only)"
-          # If the first dated changelog entry already contains a short SHA, do nothing
-          if grep -qE '^- \*\*[0-9]{4}-[0-9]{2}-[0-9]{2}:\*\*.*`[0-9a-f]{7,}`' "$FILE"; then
-            echo "Changelog already contains a commit SHA; skipping injection."
-          else
-            # Use perl to replace the first dated entry's header to include the SHA
-            perl -0777 -pe "s/^(- \\*\\*\\d{4}-\\d{2}-\\d{2}:\\*\\*)/$1 \`$SHORT\`/m" -i "$FILE"
-            echo "Injected commit SHA into working copy of $FILE"
-          fi
