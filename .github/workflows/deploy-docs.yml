@@ -44,7 +44,8 @@ jobs:
           COMMIT_URL="https://github.com/${REPO}/commit/${FULL_SHA}"
           # If the short SHA exists as a plain backticked token (not already a link), replace it with a markdown link whose text is the backticked SHA
           if grep -q "\`$SHORT\`" "$FILE" && ! grep -q "\[\`$SHORT\`\]($COMMIT_URL)" "$FILE"; then
-            perl -0777 -pe "s/\`$SHORT\`/[\`$SHORT\`]($COMMIT_URL)/m" -i "$FILE"
+            # Use a different delimiter (#) so the commit URL's slashes don't break the perl s/// expression
+            perl -0777 -pe "s#\`$SHORT\`#[\`$SHORT\`]($COMMIT_URL)#m" -i "$FILE"
             echo "Linked $SHORT to $COMMIT_URL"
           else
             echo "No plain $SHORT token found or already linked; skipping."
