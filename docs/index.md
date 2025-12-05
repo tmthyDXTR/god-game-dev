@@ -1,10 +1,13 @@
 <link rel="stylesheet" href="assets/site.css">
+[//]: # (Auto insert commit sha with hyperlink with {{COMMIT _ SHA}} without spaces)
 
 # GOD — Development Changelog 
 
 ---
 
 **Recent Changes (Assets/)**
+
+- **2025-12-05:** {{COMMIT_SHA}} — 
 
 - **2025-12-04:** `de34c9a`  — "gh pages deployment action to automate changelog sha insertion test"
 
