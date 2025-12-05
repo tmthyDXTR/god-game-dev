@@ -7,7 +7,7 @@ Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces
 
 **Recent Changes (Assets/)**
 
-- **2025-12-05:** `{{COMMIT_SHA}}` — "auto insert hyperlinks to commit at sha in changelog" 
+- **2025-12-05:** [`e06a773`](https://github.com/tmthyDXTR/god-game-dev/commit/e06a773ef4c4ad49dd1feda6200b13ffd021f990) — "auto insert hyperlinks to commit at sha in changelog" 
 
  - **2025-12-04:** [`de34c9a`](https://github.com/tmthyDXTR/god-assets/commit/de34c9a)  — "gh pages deployment action to automate changelog sha insertion test"
  - **2025-12-01:** [`62a4364`](https://github.com/tmthyDXTR/god-assets/commit/62a4364)  — "prototype: population / worshiper system"
