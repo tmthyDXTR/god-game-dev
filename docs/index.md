@@ -7,7 +7,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-05:** {{COMMIT_SHA}} — 
+- **2025-12-05:** {{COMMIT_SHA}} — "auto insert hyperlinks to commit at sha in changelog" 
 
 - **2025-12-04:** `de34c9a`  — "gh pages deployment action to automate changelog sha insertion test"
 
