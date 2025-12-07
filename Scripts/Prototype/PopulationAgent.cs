@@ -3,7 +3,7 @@ using HexGrid;
 
 public class PopulationAgent : MonoBehaviour
 {
-    public float moveSpeed = .5f;
+    public float moveSpeed = .25f;
     public HexTile currentTile;
     HexTile targetTile;
     bool stayOnTile = false;
