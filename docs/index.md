@@ -7,7 +7,7 @@ Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces
 
 **Recent Changes (Assets/)**
 
-- **2025-12-07:** `{{COMMIT_SHA}}` — camera movement, some brainstorming docs
+- **2025-12-07:** [`502d309`](https://github.com/tmthyDXTR/god-game-dev/commit/502d309dabc561a5af6d0c193d81be2996444810) — camera movement, some brainstorming docs
 
 - **2025-12-05:** [`e06a773`](https://github.com/tmthyDXTR/god-game-dev/commit/e06a773ef4c4ad49dd1feda6200b13ffd021f990) — "auto insert hyperlinks to commit at sha in changelog" 
 
