@@ -17,7 +17,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-09:** `{{COMMIT_SHA}}` — deck debugger editor
+- **2025-12-09:** [`02094ce`](https://github.com/tmthyDXTR/god-game-dev/commit/02094cef63d0e98abfd26a70f51ed074a022c362) — deck debugger editor
   - Added `DeckManager` debug logs and small Editor debugger (Tools → Deck Debugger, Ctrl+D),
 
 - **2025-12-08:** [`6920049`](https://github.com/tmthyDXTR/god-game-dev/commit/6920049c080b7aecfc69b2b4b9f963bf436210aa) — prototype card + UI improvements
