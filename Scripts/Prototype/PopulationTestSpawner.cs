@@ -8,7 +8,7 @@ public class PopulationTestSpawner : MonoBehaviour
     void Start()
     {
         // find existing HexTile objects in the scene
-        var tiles = FindObjectsOfType<HexTile>();
+        var tiles = FindObjectsByType<HexTile>(FindObjectsSortMode.None);
         if (tiles == null || tiles.Length == 0)
         {
             // if no tiles exist, create a tiny 3x3 grid for quick tests
@@ -16,7 +16,7 @@ public class PopulationTestSpawner : MonoBehaviour
         }
 
         // Try to spawn all agents at the god-beast origin tile (0,0)
-        var gen = FindObjectOfType<HexGridGenerator>();
+        var gen = FindFirstObjectByType<HexGridGenerator>();
         Hex origin = new Hex(0, 0);
         HexTile spawnTile = null;
         if (gen != null && gen.tiles != null && gen.tiles.TryGetValue(origin, out var originTile))
@@ -47,7 +47,7 @@ public class PopulationTestSpawner : MonoBehaviour
             for (int x = 0; x < w; x++)
             {
                 var go = new GameObject($"Tile_{x}_{y}");
-                go.transform.position = new Vector3((x - w/2f) * spacing, (y - h/2f) * spacing, 0);
+                go.transform.position = new Vector3((x - w / 2f) * spacing, (y - h / 2f) * spacing, 0);
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.color = new Color(0, 0.5f, 0, 0.3f);
                 var tile = go.AddComponent<HexGrid.HexTile>();
@@ -56,7 +56,7 @@ public class PopulationTestSpawner : MonoBehaviour
         }
 
         // Optional: populate HexGridGenerator.tiles if present so neighbors can be resolved
-        var gen = FindObjectOfType<HexGrid.HexGridGenerator>();
+        var gen = FindFirstObjectByType<HexGrid.HexGridGenerator>();
         if (gen != null)
         {
             foreach (var t in list)

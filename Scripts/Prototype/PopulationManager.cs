@@ -28,7 +28,7 @@ public class PopulationManager : MonoBehaviour
         CreateAgentSprite();
 
         // find grid generator in scene if present
-        gridGenerator = FindObjectOfType<HexGridGenerator>();
+        gridGenerator = FindFirstObjectByType<HexGridGenerator>();
 
         for (int i = 0; i < initialPool; i++)
         {
@@ -93,7 +93,7 @@ public class PopulationManager : MonoBehaviour
     {
         if (gridGenerator == null)
         {
-            gridGenerator = FindObjectOfType<HexGridGenerator>();
+            gridGenerator = FindFirstObjectByType<HexGridGenerator>();
             if (gridGenerator == null) return;
         }
 

@@ -1,5 +1,15 @@
 <link rel="stylesheet" href="assets/site.css">
-Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces
+<!-- Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces -->
+
+<nav>
+<ul style="list-style:none; padding:0; display:flex; gap:1rem;">
+  <li><a href="index.html">Home</a></li>
+  <li><a href="card-brainstorm.html">Card Ideas</a></li>
+  <li><a href="proto-brainstorm.html">Prototype Ideas</a></li>
+  <li><a href="localizationSetup.html">Localization Setup</a></li>
+</ul>
+</nav>
+---
 
 # GOD — Development Changelog 
 
@@ -7,7 +17,15 @@ Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces
 
 **Recent Changes (Assets/)**
 
-- **2025-12-07:** [`502d309`](https://github.com/tmthyDXTR/god-game-dev/commit/502d309dabc561a5af6d0c193d81be2996444810) — camera movement, some brainstorming docs
+
+-- **2025-12-08:** `{{COMMIT_SHA}}` — prototype card + UI improvements
+  - Added tile hover popup (runtime) and custom pixel font
+  - Implemented `ForageCardSO` and `CardPlayManager` (play-on-map flow)
+  - Added `CardTargetingController` for map targeting and tile highlight support
+  - Made `CardSO` localization-ready (`LocalizedString` fields) and added Localization setup docs
+  - Fixed hand UI layout so hand reflows immediately after play (forced rebuild)
+  - Improved hover baseline handling and arc layout so cards fan tighter with fewer cards
+  - Misc: camera movement and small doc updates
 
 - **2025-12-05:** [`e06a773`](https://github.com/tmthyDXTR/god-game-dev/commit/e06a773ef4c4ad49dd1feda6200b13ffd021f990) — "auto insert hyperlinks to commit at sha in changelog" 
 

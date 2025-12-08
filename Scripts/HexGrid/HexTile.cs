@@ -11,6 +11,8 @@ namespace HexGrid
         [Tooltip("Number of population agents currently on this tile (managed by PopulationManager)")]
         public int populationCount = 0;
 
+        
+
         // Called by the population system when an agent arrives
         public void OnPopulationEnter(object agent)
         {

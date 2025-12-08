@@ -12,7 +12,7 @@ namespace Prototype.Cards
         public Transform handContainer; // where card prefabs are instantiated
         [Header("Debug")]
         [Tooltip("If true and the hand's parent canvas isn't suitable, create a dedicated overlay Canvas and reparent the handContainer into it")]
-        public bool createOverlayIfMissing = true;
+        public bool createOverlayIfMissing = false;
 
         [Header("Layout")]
         [Tooltip("Horizontal spacing (pixels) between card instances in the hand")]
@@ -106,6 +106,11 @@ namespace Prototype.Cards
         private void OnHandChanged(List<CardSO> hand)
         {
             Refresh(hand);
+            ArcLayoutGroup arc = FindFirstObjectByType<ArcLayoutGroup>();
+            if (arc != null)
+            {
+                arc.Arrange();
+            }
         }
 
         public void Refresh(List<CardSO> hand)
@@ -125,8 +130,12 @@ namespace Prototype.Cards
                 return;
             }
 
-            // clear
-            foreach (var v in currentViews) Destroy(v);
+            // clear existing views (they will be destroyed, no need to invalidate baselines)
+            Debug.Log($"HandUI.Refresh: clearing {currentViews.Count} existing views, new hand size={(hand?.Count ?? 0)}", this);
+            foreach (var v in currentViews)
+            {
+                Destroy(v);
+            }
             currentViews.Clear();
 
             // instantiate (positioned horizontally to avoid stacking)
@@ -202,6 +211,31 @@ namespace Prototype.Cards
 
                 Debug.Log($"HandUI: Spawned card view for '{card?.cardName ?? "<null>"}' as {go.name} parent={go.transform.parent?.name ?? "<null>"} activeInHierarchy={go.activeInHierarchy} pos={go.GetComponent<RectTransform>()?.anchoredPosition}", this);
                 currentViews.Add(go);
+            }
+
+            // Force arc layout to arrange cards after one frame so Unity's layout finishes first
+            try
+            {
+                ArcLayoutGroup arc = GetComponentInParent<ArcLayoutGroup>();
+                if (arc == null) arc = FindFirstObjectByType<ArcLayoutGroup>();
+                if (arc != null)
+                {
+                    StartCoroutine(ArrangeNextFrame(arc));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"HandUI.Refresh: failed to schedule arc arrange: {ex.Message}", this);
+            }
+        }
+
+        private System.Collections.IEnumerator ArrangeNextFrame(ArcLayoutGroup arc)
+        {
+            yield return null; // Wait one frame for layout to settle
+            if (arc != null)
+            {
+                arc.Arrange();
+                Debug.Log($"HandUI.ArrangeNextFrame: arranged {currentViews.Count} cards after layout settled", this);
             }
         }
 

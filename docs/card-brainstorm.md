@@ -1,3 +1,11 @@
+<nav>
+<ul style="list-style:none; padding:0; display:flex; gap:1rem;">
+	<li><a href="index.html">Home</a></li>
+	<li><a href="card-brainstorm.html">Card Ideas</a></li>
+	<li><a href="proto-brainstorm.html">Prototype Ideas</a></li>
+	<li><a href="localizationSetup.html">Localization Setup</a></li>
+</ul>
+</nav>
 
 Prototype numeric rules (simple starting defaults)
 
@@ -12,25 +20,57 @@ Card rarity: Common / Uncommon / Rare / Unique (drop/chance structure).
 
 # FOOD 
 
-## Seed (Common) [Leave room for Rare cards later]
-Base effect: Play onto a tile to mark “seeded” (consumes card). Behavior depends on tile type and follow-up:
+1. Seed (Common) [Leave room for Rare cards later]
+World effect: Play onto a tile to mark “seeded” (consumes card). Behavior depends on tile type and follow-up:
 - +Plain
 - +Plow(Upgrade)
 - +Forest
 - +Grove(Upgrade)
+Combat effect:
 
 Get by: Scouting%, Foraging%, Vendor, Harvest of Crops
 
 
+2. Forage [Simple resource gather card]
+World effect: 
+Combat effect:
+
+# Forage variants
+
+Forage Party (Instant, deterministic-ish) — simplest
+Effect: Instant +N food to tile (or global stash). N = base + random(0..bonus) * workers. Reduces tile.forageStock by taken amount.
+Cost: play card (AP) and/or consume 1 forager/pop.
+Pros: immediate, tactile, easy to UI and test; good for early-game.
+Cons: limited depth; predictable.
+Tuning: base=2, bonus=4 per forager; regrowth 0.5–1/turn.
+
+Forage Party (Probabilistic Finds) — more spice
+Effect: Instant food plus a chance to find rare items (herb, seed, small card). Yield has variance; also chance of injury (small).
+Pros: fun risk/reward; produces card economy and seed finds.
+Cons: randomness; need to show probabilities to players.
+Tuning: 15% rare find, 10% injury.
+
+Forage Patch (Create Temporary Repeatable Source)
+Effect: transforms tile into a "Forage Patch" state for M turns (3–5). Each turn it gives small food automatically or increases regrowth. Card consumed to create patch; needs small upkeep or builder to maintain.
+Pros: introduces planning, area control, combo with managed grove.
+Cons: multi-turn bookkeeping and visuals.
+Tuning: +1.5 food/turn for 4 turns; cost high (2 builders or 4 resources).
+
+Foraging Expedition (Multi-turn party, bigger reward, risk)
+Effect: send X foragers for T turns (they are unavailable while out). After T turns return with large yield or possibly losses if encounter predators/events.
+Pros: meaningful commitment and tension, ties to world events.
+Cons: requires more state (tracking expedition).
+Tuning: 3 foragers for 2 turns -> expected yield 12 food ± 30%, 20% predator chance causing casualties.
+
+Specialist-Boosted Forage (Skill checks)
+Effect: yield scales with presence of special character (Woodwarden, Hunter). If special present, guaranteed bonus and reduced injury chance.
+Pros: gives value to recruiting special characters and cards that bind them.
+Cons: dependency on other systems (special chars).
+Tuning: +50% yield if Woodwarden present; injury chance reduced to 2%.
 
 
-## Forage
-Base effect: 
 
-
-
-
-
+# Other ideas
 
 Blessing of the Grove — Cost: 1 Food / CD 3
 

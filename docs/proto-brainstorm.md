@@ -1,5 +1,29 @@
-# proto brainstorm
+<nav>
+<ul style="list-style:none; padding:0; display:flex; gap:1rem;">
+  <li><a href="index.html">Home</a></li>
+  <li><a href="card-brainstorm.html">Card Ideas</a></li>
+  <li><a href="proto-brainstorm.html">Prototype Ideas</a></li>
+  <li><a href="localizationSetup.html">Localization Setup</a></li>
+</ul>
+</nav>
 
+TODO:
+X1. Tile-hover-popup with simple info
+2. 1 Prototype card
+X  - First implementation Forage
+  - Use effect
+
+3. card play targeting
+Next improvements
+Make highlighting non-destructive: track selection manager state rather than directly setting colors, or implement a visual ring prefab per tile.
+Disable other input while targeting (e.g., prevent moving units).
+Show card tooltip/cost while targeting.
+Only highlight tiles in a limited radius or meeting additional card-specific conditions (override CanTarget in card subclasses).
+
+4. Move n amount population to another tile implementation
+
+
+# proto brainstorm
 
 ## POPULATION
 normal population both a visible part of the map (small pawn sprites/bars) and a turn-resolved resource with worker‑slots + lifecycle, while cards act as fast, local modifiers or multi-turn programs that consume/produce population, skills, or upkeep.
@@ -13,9 +37,18 @@ starvation
 
 ## FAITH
 Faith: a derived scalar (global and/or local) computed from worshipper counts, modifiers (morale, cultural tags, special characters). Faith feeds two systems:
+
 Passive scaling: God stats (HP, Spell Strength, Mana) scale with FaithFactor (diminishing returns).
+
 Active currency: Some powerful god actions/cards require spending worshippers or faith (sacrifice = instant HP, ritual = temporary buff).
+
 Tension: recruiting/protecting worshippers vs using them as currency or sacrificing them for survival.
+
+Local faith matters: make certain god abilities only usable in tiles where localFaith > X (encourages moving to/keeping followers).
+
+Faith as resource + reputation: allow factions (rival groups) to attract worshippers if certain conditions occur — adds competitive dynamics early.
+
+Ritual chain: allow combining seeds/managed grove with shrine to create pilgrimage routes that steadily convert migrating bands.
 
 
 

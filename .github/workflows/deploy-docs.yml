@@ -56,11 +56,20 @@ jobs:
           mkdir -p public
           cp -r docs/* public/
 
-      - name: Convert index.md to index.html
+      - name: Convert markdown docs in `public/` to HTML
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc
-          pandoc public/index.md -o public/index.html --metadata title="GOD — Development Changelog"
+          # Convert each markdown file in public/ to an HTML file
+          for md in public/*.md; do
+            [ -f "$md" ] || continue
+            html="${md%.md}.html"
+            if [ "$(basename "$md")" = "index.md" ]; then
+              pandoc "$md" -o "$html" --metadata title="GOD — Development Changelog"
+            else
+              pandoc "$md" -o "$html"
+            fi
+          done
 
       - name: Upload GitHub Pages artifact
         id: upload

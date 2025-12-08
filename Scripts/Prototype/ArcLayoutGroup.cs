@@ -7,8 +7,10 @@ namespace Prototype.Cards
     [RequireComponent(typeof(RectTransform))]
     public class ArcLayoutGroup : MonoBehaviour
     {
-        [Tooltip("Total arc angle in degrees (spread). 0 = straight line.")]
-        public float arcAngle = 60f;
+        [Tooltip("Maximum arc angle in degrees for full hand (e.g., 5+ cards). Scales down with fewer cards.")]
+        public float maxArcAngle = 60f;
+        [Tooltip("Arc angle per card (degrees). Actual angle = min(maxArcAngle, cardCount * anglePerCard)")]
+        public float anglePerCard = 15f;
         [Tooltip("Radius in local units to place children along the arc")]
         public float radius = 200f;
         [Tooltip("Rotate children to align with the arc tangent")]
@@ -54,8 +56,11 @@ namespace Prototype.Cards
             if (rt == null) rt = GetComponent<RectTransform>();
             int count = rt.childCount;
             if (count == 0) return;
-
-            float totalAngle = Mathf.Max(0f, arcAngle);
+            // Scale arc angle based on card count: fewer cards = narrower fan
+            float totalAngle = Mathf.Min(maxArcAngle, count * anglePerCard);
+            totalAngle = Mathf.Max(0f, totalAngle);
+            // Special-case single card: no spread, center it
+            if (count == 1) totalAngle = 0f;
             float startAngle = centered ? -totalAngle * 0.5f : 0f;
             float step = (count > 1) ? totalAngle / (count - 1) : 0f;
 
@@ -138,7 +143,11 @@ namespace Prototype.Cards
             int count = rt.childCount;
             if (count == 0) yield break;
 
-            float totalAngle = Mathf.Max(0f, arcAngle);
+            // Scale arc angle based on card count: fewer cards = narrower fan
+            float totalAngle = Mathf.Min(maxArcAngle, count * anglePerCard);
+            totalAngle = Mathf.Max(0f, totalAngle);
+            // Special-case single card: no spread, center it
+            if (count == 1) totalAngle = 0f;
             float startAngle = centered ? -totalAngle * 0.5f : 0f;
             float step = (count > 1) ? totalAngle / (count - 1) : 0f;
 

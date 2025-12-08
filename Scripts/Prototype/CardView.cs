@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Localization;
 using Prototype.Cards;
+using UnityEngine.Localization.Settings;
 using UnityEngine.EventSystems;
 
 namespace Prototype.Cards
@@ -73,6 +75,8 @@ namespace Prototype.Cards
         private Quaternion originalVisualLocalRot;
         private Vector3 originalVisualLocalPos;
         private bool baselineCaptured = false;
+        // prevent repeated localization subscriptions/resolutions
+        private bool localizationResolveScheduled = false;
         // Logical slot index assigned by the hand spawner to preserve ordering
         public int slotIndex = -1;
 
@@ -124,6 +128,59 @@ namespace Prototype.Cards
             }
         }
 
+        // Attempt to resolve localized strings. If the Localization system isn't
+        // initialized yet, schedule to try again when initialization completes.
+        private void TryResolveLocalizedStrings()
+        {
+            if (card == null) return;
+
+            // If localization hasn't finished initializing, wait and retry once
+            var initOp = LocalizationSettings.InitializationOperation;
+            if (initOp.IsValid() && !initOp.IsDone)
+            {
+                initOp.Completed += (op) => {
+                    // run on main thread when ready
+                    ResolveLocalizedStringsSafely();
+                };
+                return;
+            }
+
+            // If no SelectedLocale yet, also wait for initialization to provide one
+            if (LocalizationSettings.SelectedLocale == null)
+            {
+                if (initOp.IsValid())
+                {
+                    initOp.Completed += (op) => { ResolveLocalizedStringsSafely(); };
+                    return;
+                }
+            }
+
+            ResolveLocalizedStringsSafely();
+        }
+
+        private void ResolveLocalizedStringsSafely()
+        {
+            try
+            {
+                if (card == null) return;
+                if (cardName != null)
+                {
+                    var locNameOp = card.localizedName.GetLocalizedStringAsync();
+                    locNameOp.Completed += (op) => { if (cardName != null && !string.IsNullOrEmpty(op.Result)) cardName.text = op.Result; };
+                }
+
+                if (cardText != null)
+                {
+                    var locDescOp = card.localizedDescription.GetLocalizedStringAsync();
+                    locDescOp.Completed += (op) => { if (cardText != null && !string.IsNullOrEmpty(op.Result)) cardText.text = op.Result; };
+                }
+            }
+            catch (System.Exception)
+            {
+                // If anything goes wrong with localization, silently fall back to existing strings.
+            }
+        }
+
         private void Awake()
         {
             rt = GetComponent<RectTransform>();
@@ -150,6 +207,17 @@ namespace Prototype.Cards
                 hoverOffset = clamped;
             }
             originalSiblingIndex = transform.GetSiblingIndex();
+
+            // wire up click to enter targeting mode
+            try
+            {
+                var btn = GetComponent<UnityEngine.UI.Button>();
+                if (btn != null)
+                {
+                    btn.onClick.AddListener(OnCardClicked);
+                }
+            }
+            catch { }
         }
 
         public void SetCard(CardSO so)
@@ -161,12 +229,32 @@ namespace Prototype.Cards
         public void Refresh()
         {
             if (card == null) return;
+            // Set immediate fallback values so UI isn't blank while async localization resolves
             if (cardName) cardName.text = card.cardName;
             if (cardText) cardText.text = card.description;
+
+            // If localized values are assigned, resolve them asynchronously and overwrite.
+            // Guard against calling GetLocalizedStringAsync before the Localization system
+            // has initialized (SelectedLocale can be null during startup).
+            if (!localizationResolveScheduled)
+            {
+                localizationResolveScheduled = true;
+                TryResolveLocalizedStrings();
+            }
             if (cardZone) cardZone.text = card.zone.ToString();
             if (artworkImage) artworkImage.sprite = card.artwork;
             if (zoneImage) zoneImage.sprite = card.zoneIcon;
             // allow baseline to be captured after visuals/positions are applied
+            baselineCaptured = false;
+        }
+
+        // Called by HandUI when the hand changes to force re-capture of baseline on next hover
+        public void InvalidateBaseline()
+        {
+            // Skip if RectTransform is missing (card is being destroyed)
+            if (rt == null) rt = GetComponent<RectTransform>();
+            if (rt == null) return;
+            if (debugHover) Debug.Log($"CardView.InvalidateBaseline '{name}': was={baselineCaptured} anchored={rt.anchoredPosition}");
             baselineCaptured = false;
         }
 
@@ -176,6 +264,27 @@ namespace Prototype.Cards
         {
             if (debugHover) Debug.Log($"CardView.RestoreFromDrag '{name}': restoring hover/position immediately");
             ResetPositionImmediate();
+        }
+
+        private void OnDestroy()
+        {
+            try
+            {
+                var btn = GetComponent<UnityEngine.UI.Button>();
+                if (btn != null)
+                {
+                    btn.onClick.RemoveListener(OnCardClicked);
+                }
+            }
+            catch { }
+        }
+
+        private void OnCardClicked()
+        {
+            if (card == null) return;
+            // Enter targeting mode for this card
+            try { CardTargetingController.Instance?.StartTargeting(card); }
+            catch { }
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -208,6 +317,11 @@ namespace Prototype.Cards
                         originalVisualLocalRot = visualRoot.localRotation;
                     }
                     baselineCaptured = true;
+                    if (debugHover) Debug.Log($"CardView.OnPointerEnter '{name}': CAPTURED baseline anchored={originalAnchoredPos} local={originalLocalPos}");
+                }
+                else
+                {
+                    if (debugHover) Debug.Log($"CardView.OnPointerEnter '{name}': baseline already captured, using anchored={originalAnchoredPos} (current={rt.anchoredPosition})");
                 }
             }
 
@@ -465,7 +579,7 @@ namespace Prototype.Cards
                 }
             }
             catch { }
-            if (debugHover) Debug.Log($"CardView.ResetPositionImmediate '{name}': reset to anchored={originalAnchoredPos} local={originalLocalPos}");
+            if (debugHover) Debug.Log($"CardView.ResetPositionImmediate '{name}': reset to anchored={originalAnchoredPos} local={originalLocalPos} (was at {rt?.anchoredPosition})");
             isLifted = false;
             elevated = false;
         }

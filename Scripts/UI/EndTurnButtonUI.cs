@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Managers;
 
 namespace UI
@@ -42,16 +43,17 @@ namespace UI
             rect.anchoredPosition = new Vector2(-20, 20);
             rect.sizeDelta = new Vector2(120, 40);
 
-            // Add button text
+            // Add button text (TextMeshPro)
             GameObject textObj = new GameObject("ButtonText");
-            textObj.transform.SetParent(buttonObj.transform);
-            var text = textObj.AddComponent<Text>();
-            text.text = "End Turn";
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 20;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
-            var textRect = text.GetComponent<RectTransform>();
+            textObj.transform.SetParent(buttonObj.transform, false);
+            var tmp = textObj.AddComponent<TextMeshProUGUI>();
+            tmp.text = "End Turn";
+            tmp.enableAutoSizing = false;
+            tmp.fontSize = 20;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = Color.white;
+            tmp.raycastTarget = false;
+            var textRect = tmp.rectTransform;
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = Vector2.zero;
