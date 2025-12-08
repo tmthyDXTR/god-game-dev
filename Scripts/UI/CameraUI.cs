@@ -70,7 +70,20 @@ public class CameraUI : MonoBehaviour
         else
             transform.position = target;
 
+        MouseWheelZoom();
         // Mouse-wheel zoom (new Input System)
+    }
+
+    private void MouseWheelZoom()
+    {
+        // If mouse over ui element, ignore zoom
+        if (UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        // If mouse not in game window, ignore zoom
+        if (!Application.isFocused)
+            return;
+            
         float scrollY = 0f;
         if (Mouse.current != null)
         {
@@ -103,6 +116,7 @@ public class CameraUI : MonoBehaviour
                         cam.fieldOfView = targetFov;
                 }
             }
+        
         }
     }
 }

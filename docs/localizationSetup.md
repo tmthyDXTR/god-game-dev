@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="assets/site.css">
+
 <nav>
 <ul style="list-style:none; padding:0; display:flex; gap:1rem;">
   <li><a href="index.html">Home</a></li>

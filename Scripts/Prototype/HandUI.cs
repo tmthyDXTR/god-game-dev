@@ -12,6 +12,7 @@ namespace Prototype.Cards
         public Transform handContainer; // where card prefabs are instantiated
         [Header("Debug")]
         [Tooltip("If true and the hand's parent canvas isn't suitable, create a dedicated overlay Canvas and reparent the handContainer into it")]
+        public bool debugCardView = false;
         public bool createOverlayIfMissing = false;
 
         [Header("Layout")]
@@ -43,7 +44,7 @@ namespace Prototype.Cards
                         {
                             canvas.overrideSorting = true;
                             canvas.sortingOrder = Mathf.Max(canvas.sortingOrder, 100);
-                            Debug.Log($"HandUI: adjusted parent Canvas sortingOrder to {canvas.sortingOrder}", this);
+                            if (debugCardView) Debug.Log($"HandUI: adjusted parent Canvas sortingOrder to {canvas.sortingOrder}", this);
                         }
                     }
 
@@ -69,7 +70,7 @@ namespace Prototype.Cards
                                 overlayCanvas.sortingOrder = 1000;
                                 overlayGO.AddComponent<UnityEngine.UI.CanvasScaler>();
                                 overlayGO.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-                                Debug.Log("HandUI: Created overlay Canvas for hand UI", this);
+                                if (debugCardView) Debug.Log("HandUI: Created overlay Canvas for hand UI", this);
                             }
 
                             if (overlayGO != null)
@@ -78,7 +79,7 @@ namespace Prototype.Cards
                                 try
                                 {
                                     handContainer.SetParent(overlayGO.transform, false);
-                                    Debug.Log($"HandUI: Reparented handContainer under {overlayGO.name}", this);
+                                    if (debugCardView) Debug.Log($"HandUI: Reparented handContainer under {overlayGO.name}", this);
                                 }
                                 catch (System.Exception ex)
                                 {
@@ -115,7 +116,7 @@ namespace Prototype.Cards
 
         public void Refresh(List<CardSO> hand)
         {
-            Debug.Log($"HandUI.Refresh called. handCount={(hand==null?0:hand.Count)} currentViews={currentViews.Count} cardPrefabAssigned={(cardPrefab!=null)} handContainerAssigned={(handContainer!=null)} handContainerActive={(handContainer!=null?handContainer.gameObject.activeInHierarchy:false)}", this);
+            if (debugCardView) Debug.Log($"HandUI.Refresh called. handCount={(hand==null?0:hand.Count)} currentViews={currentViews.Count} cardPrefabAssigned={(cardPrefab!=null)} handContainerAssigned={(handContainer!=null)} handContainerActive={(handContainer!=null?handContainer.gameObject.activeInHierarchy:false)}", this);
 
             // validate prefab/container
             if (cardPrefab == null)
@@ -131,7 +132,7 @@ namespace Prototype.Cards
             }
 
             // clear existing views (they will be destroyed, no need to invalidate baselines)
-            Debug.Log($"HandUI.Refresh: clearing {currentViews.Count} existing views, new hand size={(hand?.Count ?? 0)}", this);
+            if (debugCardView) Debug.Log($"HandUI.Refresh: clearing {currentViews.Count} existing views, new hand size={(hand?.Count ?? 0)}", this);
             foreach (var v in currentViews)
             {
                 Destroy(v);
@@ -156,7 +157,7 @@ namespace Prototype.Cards
                     rootRT.localScale = Vector3.one;
                     rootRT.anchoredPosition = Vector2.zero;
                     rootRT.localPosition = Vector3.zero;
-                    Debug.Log($"HandUI: Added RectTransform to instantiated card root {go.name}", this);
+                    if (debugCardView) Debug.Log($"HandUI: Added RectTransform to instantiated card root {go.name}", this);
                 }
                 else
                 {
@@ -186,7 +187,7 @@ namespace Prototype.Cards
                         if (texts.Length >= 1) texts[0].text = card?.cardName ?? "<card>";
                         if (texts.Length >= 2) texts[1].text = card?.description ?? "";
                         if (texts.Length >= 3) texts[2].text = card?.zone.ToString() ?? "";
-                        Debug.Log($"HandUI: Fallback populated TMP_Texts on {go.name}", this);
+                        if (debugCardView) Debug.Log($"HandUI: Fallback populated TMP_Texts on {go.name}", this);
                     }
 
                     // Ensure there's a visible background image as a last-resort visual aid
@@ -209,7 +210,7 @@ namespace Prototype.Cards
                 }
                 catch { }
 
-                Debug.Log($"HandUI: Spawned card view for '{card?.cardName ?? "<null>"}' as {go.name} parent={go.transform.parent?.name ?? "<null>"} activeInHierarchy={go.activeInHierarchy} pos={go.GetComponent<RectTransform>()?.anchoredPosition}", this);
+                if (debugCardView) Debug.Log($"HandUI: Spawned card view for '{card?.cardName ?? "<null>"}' as {go.name} parent={go.transform.parent?.name ?? "<null>"} activeInHierarchy={go.activeInHierarchy} pos={go.GetComponent<RectTransform>()?.anchoredPosition}", this);
                 currentViews.Add(go);
             }
 
@@ -235,7 +236,7 @@ namespace Prototype.Cards
             if (arc != null)
             {
                 arc.Arrange();
-                Debug.Log($"HandUI.ArrangeNextFrame: arranged {currentViews.Count} cards after layout settled", this);
+                if (debugCardView) Debug.Log($"HandUI.ArrangeNextFrame: arranged {currentViews.Count} cards after layout settled", this);
             }
         }
 

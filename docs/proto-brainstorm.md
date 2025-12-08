@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="assets/site.css">
+
 <nav>
 <ul style="list-style:none; padding:0; display:flex; gap:1rem;">
   <li><a href="index.html">Home</a></li>
@@ -8,12 +10,9 @@
 </nav>
 
 TODO:
-X1. Tile-hover-popup with simple info
-2. 1 Prototype card
-X  - First implementation Forage
-  - Use effect
 
 3. card play targeting
+
 Next improvements
 Make highlighting non-destructive: track selection manager state rather than directly setting colors, or implement a visual ring prefab per tile.
 Disable other input while targeting (e.g., prevent moving units).

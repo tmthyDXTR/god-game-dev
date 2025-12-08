@@ -57,6 +57,7 @@ public class PopulationManager : MonoBehaviour
         sr.color = Color.black;
         go.transform.localScale = Vector3.one * 0.04f;
         go.AddComponent<PopulationAgent>();
+        go.transform.parent = GameObject.Find("Population")?.transform ?? transform;
         return go;
     }
 

@@ -323,7 +323,7 @@ MonoBehaviour:
   hoverEnterDelay: 0.05
   hoverExitDelay: 0.05
   useLocalPosition: 1
-  debugHover: 1
+  debugHover: 0
   useCanvasOverrideOnHover: 0
   hoverSortingOrder: 2000
   keepSiblingIndexWhileHovered: 1
