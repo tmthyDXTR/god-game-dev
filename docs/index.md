@@ -18,7 +18,7 @@
 **Recent Changes (Assets/)**
 
 
--- **2025-12-08:** `{{COMMIT_SHA}}` — prototype card + UI improvements
+- **2025-12-08:** `{{COMMIT_SHA}}` — prototype card + UI improvements
   - Added tile hover popup (runtime) and custom pixel font
   - Implemented `ForageCardSO` and `CardPlayManager` (play-on-map flow)
   - Added `CardTargetingController` for map targeting and tile highlight support

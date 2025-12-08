@@ -1,38 +1,113 @@
-:root{
-  --bg:#071019; /* deep navy */
-  --panel:#091623; /* slightly lighter */
-  --accent:#39ff14; /* neon green */
-  --muted:#9db0c6;
-  --paper:#0f2130;
-  --mono: 'Ubuntu Mono', Courier, monospace;
+/* Retro / dungeon manual stylesheet
+   Inspired by scanned gamebook character sheets — parchment, framed art, and ornate headings
+*/
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #efe6cf; /* parchment base */
+  color: #1f170f; /* dark brown text */
+  font-family: "Garamond", "Palatino Linotype", "Book Antiqua", serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-html,body{height:100%;margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#021018);font-family:var(--mono);color:var(--muted);}
+/* subtle halftone / paper texture using layered gradients */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient( rgba(0,0,0,0.02) 0.5px, transparent 0.5px );
+  background-size: 6px 6px, 100% 6px;
+  opacity: 0.9;
+}
 
-.container{max-width:980px;margin:28px auto;padding:18px;background:linear-gradient(180deg,var(--panel),#06202a);box-shadow:0 6px 24px rgba(0,0,0,0.6);border:2px solid #04202a;border-radius:6px}
+/* page container */
+main, .content, .page, #content {
+  max-width: 980px;
+  margin: 1.25rem auto;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, rgba(255,255,245,0.85), rgba(250,245,235,0.75));
+  border: 3px solid #d6c9a8;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.06);
+}
 
-.header{display:flex;align-items:center;gap:12px}
-.logo{width:64px;height:64px;background:repeating-linear-gradient(45deg,#0b2,#052 6px);border:3px solid var(--accent);box-shadow:0 0 8px rgba(57,255,20,0.08) inset}
-.title{font-size:22px;color:var(--accent);letter-spacing:1px}
-.subtitle{font-size:12px;color:#7fb39a}
+/* Decorative navigation bar */
+nav {
+  margin-bottom: 0.75rem;
+}
 
-hr{border:none;height:1px;background:linear-gradient(90deg,transparent,#113b36,transparent);margin:14px 0}
+nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
-h1,h2,h3{color:var(--accent);margin:8px 0}
+nav a {
+  display: inline-block;
+  text-decoration: none;
+  color: #2b1b0b;
+  background: linear-gradient(#fbf7ec, #efe3c8);
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #bfae95;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.06);
+  font-variant: small-caps;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
 
-code,pre{background:#021b21;color:#c8ffd1;padding:4px 6px;border-radius:3px;font-family:var(--mono)}
+nav a:hover { transform: translateY(-2px); }
 
-a{color:#8cf7a3}
+/* Headings */
+h1 {
+  font-size: 2.2rem;
+  text-align: center;
+  margin: 0.25rem 0 1rem 0;
+  letter-spacing: 0.08em;
+  color: #14100c;
+  text-shadow: 0.03em 0.03em 0 rgba(255,255,255,0.6), 0.06em 0.06em 0 rgba(0,0,0,0.05);
+}
 
-.entry{background:linear-gradient(180deg,#02161a,#031a1f);border:1px solid rgba(57,255,20,0.04);padding:12px;margin:10px 0;border-radius:4px}
-.entry .meta{font-size:12px;color:#8fb3a8;margin-bottom:8px}
-.entry ul{margin:6px 0 6px 18px}
+h2, h3 {
+  color: #221712;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed rgba(34,23,18,0.12);
+  padding-bottom: 0.35rem;
+}
 
-.footer{font-size:11px;color:#4f7b6d;margin-top:18px;text-align:center}
+/* Blockquote framed */
+blockquote {
+  border-left: 6px solid #c9bda3;
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+  background: rgba(200,180,150,0.04);
+}
 
-/* faint scanline effect */
-body::after{content:'';position:fixed;left:0;right:0;top:0;bottom:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);background-size:100% 3px;mix-blend-mode:overlay}
+/* Code styling */
+pre, code { font-family: "Courier New", Courier, monospace; background: #f3ead0; padding: 0.4rem 0.6rem; border: 1px solid rgba(0,0,0,0.05); }
+pre { overflow: auto; padding: 0.75rem; }
 
-h1{letter-spacing:2px}
+/* Framed images */
+img { max-width: 100%; height: auto; border: 6px solid #e5dcc3; padding: 6px; background: #f7f0dd; box-shadow: 0 6px 0 rgba(0,0,0,0.04); }
 
-@media (max-width:720px){.container{margin:8px;padding:12px}}
+/* Tables */
+table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; }
+th, td { border: 1px solid #d0c4a8; padding: 0.5rem 0.6rem; }
+
+/* Small footer */
+footer { margin-top: 1.25rem; text-align: center; color: rgba(34,23,18,0.6); font-size: 0.85rem; }
+
+a { color: #2b1b0b; }
+hr { border: none; border-top: 1px solid rgba(34,23,18,0.08); margin: 1rem 0; }
+
+@media (max-width: 720px) {
+  body { padding: 0.5rem; }
+  nav ul { gap: 0.4rem; }
+  main, .content, .page, #content { padding: 1rem; }
+  h1 { font-size: 1.6rem; }
+}
+
+/* Optional decorative stat bar */
+.stat-bar { height: 12px; background: linear-gradient(90deg,#cfc1a3 0%,#bfae95 100%); border: 1px solid #9b8870; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.06); }
+
