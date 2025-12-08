@@ -18,7 +18,7 @@
 **Recent Changes (Assets/)**
 
 
--- **2025-12-08:** `{{COMMIT_SHA}}` — prototype card + UI improvements
+-- **2025-12-08:** [`6920049`](https://github.com/tmthyDXTR/god-game-dev/commit/6920049c080b7aecfc69b2b4b9f963bf436210aa) — prototype card + UI improvements
   - Added tile hover popup (runtime) and custom pixel font
   - Implemented `ForageCardSO` and `CardPlayManager` (play-on-map flow)
   - Added `CardTargetingController` for map targeting and tile highlight support
