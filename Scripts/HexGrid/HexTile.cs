@@ -89,11 +89,65 @@ namespace HexGrid
         public Sprite stoneSprite;
         public Sprite boneSprite;
         private SpriteRenderer spriteRenderer;
+        // Non-destructive highlight renderer (created as a child so original sprite/color aren't overwritten)
+        private GameObject highlightObject;
+        private SpriteRenderer highlightRenderer;
+        private const float defaultHighlightScale = 1.06f;
+        private const int highlightOrderOffset = 2;
 
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
             UpdateVisual();
+        }
+
+        // Ensure the highlight child object exists.
+        private void EnsureHighlight()
+        {
+            if (highlightObject != null && highlightRenderer != null)
+                return;
+            highlightObject = new GameObject("Highlight");
+            highlightObject.transform.SetParent(transform);
+            highlightObject.transform.localRotation = Quaternion.identity;
+            highlightObject.transform.localPosition = new Vector3(0f, 0f, -0.04f);
+            highlightObject.transform.localScale = new Vector3(defaultHighlightScale, defaultHighlightScale, 1f);
+            highlightRenderer = highlightObject.AddComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+                highlightRenderer.sortingOrder = spriteRenderer.sortingOrder + highlightOrderOffset;
+            highlightRenderer.color = new Color(1f, 1f, 1f, 0f);
+            highlightRenderer.enabled = false;
+        }
+
+        // Set a visible highlight using a colored, slightly larger copy of the tile sprite. Passing a null color clears the highlight.
+        public void SetHighlight(Color? color, float scaleMultiplier = defaultHighlightScale)
+        {
+            // Don't highlight unexplored tiles
+            if (!isExplored)
+            {
+                ClearHighlight();
+                return;
+            }
+            EnsureHighlight();
+            if (spriteRenderer != null && highlightRenderer != null)
+            {
+                highlightRenderer.sprite = spriteRenderer.sprite;
+                highlightObject.transform.localScale = new Vector3(scaleMultiplier, scaleMultiplier, 1f);
+                if (color.HasValue)
+                {
+                    highlightRenderer.color = color.Value;
+                    highlightRenderer.enabled = true;
+                }
+                else
+                {
+                    highlightRenderer.enabled = false;
+                }
+            }
+        }
+
+        public void ClearHighlight()
+        {
+            if (highlightRenderer != null)
+                highlightRenderer.enabled = false;
         }
 
         public void SetTileType(HexTileType type)
@@ -129,6 +183,13 @@ namespace HexGrid
                 spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, 1f); // dark
             else
                 spriteRenderer.color = Color.white;
+            // Keep highlight sprite in sync with base sprite
+            if (highlightRenderer != null)
+            {
+                highlightRenderer.sprite = spriteRenderer.sprite;
+                if (spriteRenderer != null)
+                    highlightRenderer.sortingOrder = spriteRenderer.sortingOrder + highlightOrderOffset;
+            }
             // Update or create infestation overlay (uses bone sprite)
             UpdateInfestationOverlay();
             // Update food icons after visual change

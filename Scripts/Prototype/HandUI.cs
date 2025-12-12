@@ -22,6 +22,11 @@ namespace Prototype.Cards
         public Vector2 startOffset = Vector2.zero;
 
         private List<GameObject> currentViews = new List<GameObject>();
+        // parallel list of CardView components for convenient indexing and hover control
+        private List<CardView> cardViews = new List<CardView>();
+        private int hoveredIndex = -1;
+        private float scrollCooldownTime = 0.12f;
+        private float lastScrollTime = -999f;
 
         private void OnEnable()
         {
@@ -138,6 +143,8 @@ namespace Prototype.Cards
                 Destroy(v);
             }
             currentViews.Clear();
+            cardViews.Clear();
+            hoveredIndex = -1;
 
             // instantiate (positioned horizontally to avoid stacking)
             for (int i = 0; i < (hand?.Count ?? 0); i++)
@@ -175,6 +182,9 @@ namespace Prototype.Cards
                     // assign stable logical slot index so layout groups can preserve order
                     view.slotIndex = i;
                     view.SetCard(card);
+                    // let CardView forward scroll events to us
+                    try { view.parentHand = this; } catch { }
+                    cardViews.Add(view);
                 }
                 else
                 {
@@ -214,6 +224,10 @@ namespace Prototype.Cards
                 currentViews.Add(go);
             }
 
+            // ensure hovered index is valid
+            if (cardViews.Count == 0) hoveredIndex = -1;
+            else hoveredIndex = Mathf.Clamp(hoveredIndex, -1, cardViews.Count - 1);
+
             // Force arc layout to arrange cards after one frame so Unity's layout finishes first
             try
             {
@@ -240,11 +254,47 @@ namespace Prototype.Cards
             }
         }
 
-        // helper: request draw n via DeckManager
-        public void DrawN(int n)
+        // Called from CardView when pointer enters a card
+        public void SetHoveredCard(CardView cv)
         {
-            if (deckManager == null) return;
-            deckManager.DrawToHand(n);
+            int idx = cardViews.IndexOf(cv);
+            if (idx < 0) return;
+            hoveredIndex = idx;
+            UpdateHoverVisuals();
+        }
+
+        // Called from CardView when pointer exits a card
+        public void ClearHoveredCard(CardView cv)
+        {
+            int idx = cardViews.IndexOf(cv);
+            if (idx < 0) return;
+            if (hoveredIndex == idx) hoveredIndex = -1;
+            UpdateHoverVisuals();
+        }
+
+        // Handle scroll wheel when pointer is over a card
+        public void OnHoverScroll(float delta)
+        {
+            if (cardViews.Count == 0) return;
+            float now = Time.realtimeSinceStartup;
+            if (now - lastScrollTime < scrollCooldownTime) return;
+            lastScrollTime = now;
+
+            int dir = delta > 0f ? -1 : 1; // wheel up -> previous, down -> next
+            if (hoveredIndex < 0) hoveredIndex = 0;
+            hoveredIndex = (hoveredIndex + dir + cardViews.Count) % cardViews.Count;
+            UpdateHoverVisuals();
+        }
+
+        private void UpdateHoverVisuals()
+        {
+            for (int i = 0; i < cardViews.Count; i++)
+            {
+                var cv = cardViews[i];
+                if (cv == null) continue;
+                bool shouldHover = (i == hoveredIndex);
+                try { cv.SetHoverState(shouldHover); } catch { }
+            }
         }
     }
 }

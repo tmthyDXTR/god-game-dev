@@ -11,10 +11,11 @@
 
 TODO:
 
+2. 
+
 3. card play targeting
 
-Next improvements
-Make highlighting non-destructive: track selection manager state rather than directly setting colors, or implement a visual ring prefab per tile.
+
 Disable other input while targeting (e.g., prevent moving units).
 Show card tooltip/cost while targeting.
 Only highlight tiles in a limited radius or meeting additional card-specific conditions (override CanTarget in card subclasses).

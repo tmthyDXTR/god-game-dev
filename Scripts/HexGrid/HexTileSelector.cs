@@ -25,7 +25,7 @@ namespace HexGrid
         {
             HexTile tile = RaycastTile();
             if (hoveredTile != null && hoveredTile != selectedTile)
-                SetTileHighlight(hoveredTile, normalColor);
+                SetTileHighlight(hoveredTile, null);
             if (tile != null && tile != selectedTile)
                 SetTileHighlight(tile, hoverColor);
             hoveredTile = tile;
@@ -43,7 +43,7 @@ namespace HexGrid
                     if (selectedTile == tile)
                     {
                         // Deselect
-                        SetTileHighlight(selectedTile, normalColor);
+                        SetTileHighlight(selectedTile, null);
                         selectedTile = null;
                         if (DefaultHexTileManager.Instance != null)
                             DefaultHexTileManager.Instance.SetSelectedTile(null);
@@ -51,7 +51,7 @@ namespace HexGrid
                     else
                     {
                         if (selectedTile != null)
-                            SetTileHighlight(selectedTile, normalColor);
+                            SetTileHighlight(selectedTile, null);
                         SetTileHighlight(tile, selectColor);
                         selectedTile = tile;
                         if (DefaultHexTileManager.Instance != null)
@@ -66,7 +66,7 @@ namespace HexGrid
                 if (tile != null)
                 {
                     if (selectedTile != null)
-                        SetTileHighlight(selectedTile, normalColor);
+                        SetTileHighlight(selectedTile, null);
                     SetTileHighlight(tile, selectColor);
                     selectedTile = tile;
                     if (DefaultHexTileManager.Instance != null)
@@ -92,11 +92,10 @@ namespace HexGrid
             return null;
         }
 
-        void SetTileHighlight(HexTile tile, Color color)
+        void SetTileHighlight(HexTile tile, Color? color)
         {
-            var sr = tile.GetComponent<SpriteRenderer>();
-            if (sr != null)
-                sr.color = color;
+            if (tile == null) return;
+            tile.SetHighlight(color);
         }
     }
 }

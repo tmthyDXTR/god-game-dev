@@ -15,8 +15,7 @@ namespace Prototype.Cards
         private CardPlayManager playManager;
         private HexGrid.SelectionManager selectionManager;
 
-        // store original sprite colors so we can restore on cancel
-        private System.Collections.Generic.Dictionary<HexGrid.HexTile, UnityEngine.Color> originalColors = new System.Collections.Generic.Dictionary<HexGrid.HexTile, UnityEngine.Color>();
+        // targeting highlights are non-destructive and use SelectionManager/HexTile.SetHighlight
 
         private void Awake()
         {
@@ -104,30 +103,26 @@ namespace Prototype.Cards
 
             if (on)
             {
-                originalColors.Clear();
                 foreach (var kv in grid.tiles)
                 {
                     var tile = kv.Value;
                     if (tile == null) continue;
-                    var sr = tile.GetComponent<UnityEngine.SpriteRenderer>();
-                    if (sr != null)
-                    {
-                        originalColors[tile] = sr.color;
                         bool valid = activeCard != null && activeCard.CanTarget(tile);
-                        selectionManager.SetTileHighlight(tile, valid ? selectionManager.selectColor : selectionManager.normalColor);
-                    }
+                        if (valid)
+                            selectionManager.SetTileHighlight(tile, selectionManager.selectColor, "CardTarget");
+                        else
+                            selectionManager.SetTileHighlight(tile, null, "CardTarget");
                 }
             }
             else
             {
-                // restore original colors
-                foreach (var kv in originalColors)
+                // clear highlights
+                foreach (var kv in grid.tiles)
                 {
-                    var tile = kv.Key;
-                    var color = kv.Value;
-                    selectionManager.SetTileHighlight(tile, color);
+                    var tile = kv.Value;
+                    if (tile == null) continue;
+                        selectionManager.SetTileHighlight(tile, null, "CardTarget");
                 }
-                originalColors.Clear();
             }
         }
     }

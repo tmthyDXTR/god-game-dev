@@ -595,6 +595,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
   - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
   shuffleOnStart: 0
+  debugDeckManager: 1
 --- !u!4 &405853129
 Transform:
   m_ObjectHideFlags: 0
@@ -642,6 +643,7 @@ MonoBehaviour:
   deckManager: {fileID: 405853128}
   cardPrefab: {fileID: 7867924441779571985, guid: 04b1ac69f1b411542a93d64717d4d560, type: 3}
   handContainer: {fileID: 1781370165}
+  debugCardView: 0
   createOverlayIfMissing: 1
   cardSpacing: 160
   startOffset: {x: 0, y: 0}
@@ -652,6 +654,37 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 438890051}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &494583838
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 494583839}
+  m_Layer: 0
+  m_Name: Population
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &494583839
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494583838}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1964,3 +1997,4 @@ SceneRoots:
   - {fileID: 234460798}
   - {fileID: 385896967}
   - {fileID: 575070034}
+  - {fileID: 494583839}

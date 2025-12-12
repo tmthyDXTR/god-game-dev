@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 namespace Prototype.Cards
 {
     [RequireComponent(typeof(Button))]
-    public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IScrollHandler
     {
         [Header("Bindings")]
         public Image artworkImage;
@@ -92,6 +92,9 @@ namespace Prototype.Cards
         private Coroutine exitDelayCoroutine;
         private bool elevated = false;
         private bool isHovered = false;
+        // reference to owning HandUI for forwarding scroll events
+        [HideInInspector]
+        public HandUI parentHand;
         private bool isLifted = false;
         // Expose whether this card should be considered 'lifted' for layout
         // purposes. We treat the currently-hovered card (mouse over) as the
@@ -218,6 +221,9 @@ namespace Prototype.Cards
                 }
             }
             catch { }
+
+            // try to find parent HandUI automatically
+            try { parentHand = GetComponentInParent<HandUI>(); } catch { parentHand = null; }
         }
 
         public void SetCard(CardSO so)
@@ -338,6 +344,8 @@ namespace Prototype.Cards
             {
                 StartHover();
             }
+
+            try { parentHand?.SetHoveredCard(this); } catch { }
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -355,6 +363,84 @@ namespace Prototype.Cards
 
             if (exitDelayCoroutine != null) { StopCoroutine(exitDelayCoroutine); exitDelayCoroutine = null; }
             exitDelayCoroutine = StartCoroutine(ExitDelayRoutine());
+
+            try { parentHand?.ClearHoveredCard(this); } catch { }
+        }
+
+        // Allow external callers (HandUI) to programmatically set hover state
+        public void SetHoverState(bool hover)
+        {
+            if (hover)
+            {
+                if (isHovered) return;
+                isHovered = true;
+                if (exitDelayCoroutine != null)
+                {
+                    StopCoroutine(exitDelayCoroutine);
+                    exitDelayCoroutine = null;
+                }
+
+                if (rt == null) rt = GetComponent<RectTransform>();
+                if (rt != null && !baselineCaptured)
+                {
+                    originalAnchoredPos = rt.anchoredPosition;
+                    originalLocalPos = rt.localPosition;
+                    originalLocalScale = rt.localScale;
+                    if (visualRoot != null)
+                    {
+                        originalVisualLocalScale = visualRoot.localScale;
+                        originalVisualLocalPos = visualRoot.localPosition;
+                        originalVisualLocalRot = visualRoot.localRotation;
+                    }
+                    baselineCaptured = true;
+                }
+
+                if (enterDelayCoroutine != null) StopCoroutine(enterDelayCoroutine);
+                if (hoverEnterDelay > 0f) enterDelayCoroutine = StartCoroutine(EnterDelayRoutine());
+                else StartHover();
+            }
+            else
+            {
+                if (!isHovered) return;
+                isHovered = false;
+                if (enterDelayCoroutine != null)
+                {
+                    StopCoroutine(enterDelayCoroutine);
+                    enterDelayCoroutine = null;
+                    if (animCoroutine != null) { StopCoroutine(animCoroutine); animCoroutine = null; }
+                    ResetPositionImmediate();
+                    return;
+                }
+
+                if (animCoroutine != null)
+                {
+                    StopCoroutine(animCoroutine);
+                    animCoroutine = StartCoroutine(AnimateHover(false));
+                    if (watchdogCoroutine != null) { StopCoroutine(watchdogCoroutine); watchdogCoroutine = null; }
+                    watchdogCoroutine = StartCoroutine(ExitWatchdog());
+                    return;
+                }
+
+                if (isLifted)
+                {
+                    animCoroutine = StartCoroutine(AnimateHover(false));
+                    if (watchdogCoroutine != null) { StopCoroutine(watchdogCoroutine); watchdogCoroutine = null; }
+                    watchdogCoroutine = StartCoroutine(ExitWatchdog());
+                    return;
+                }
+
+                ResetPositionImmediate();
+            }
+        }
+
+        public void OnScroll(PointerEventData eventData)
+        {
+            // Forward scroll wheel while pointer is over this card to the parent HandUI
+            if (parentHand == null) parentHand = GetComponentInParent<HandUI>();
+            if (parentHand != null)
+            {
+                parentHand.OnHoverScroll(eventData.scrollDelta.y);
+            }
         }
 
         private System.Collections.IEnumerator EnterDelayRoutine()

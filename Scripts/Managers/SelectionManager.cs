@@ -35,6 +35,11 @@ namespace HexGrid
         public List<HexTile> tilesInRange = new List<HexTile>();
 
         private HexTile hoveredTile;
+        // Track per-tile highlight owners to allow layered, non-destructive highlights.
+        private Dictionary<HexTile, Dictionary<string, Color>> tileHighlightOwners = new Dictionary<HexTile, Dictionary<string, Color>>();
+
+        // Owner priority (higher in list = higher priority)
+        private readonly List<string> highlightPriority = new List<string> { "Selection", "CardTarget", "Range", "Hover" };
 
         private void Awake()
         {
@@ -71,7 +76,7 @@ namespace HexGrid
         {
             // Clear previous selection highlight
             if (SelectedTile != null && SelectedTile != tile)
-                SetTileHighlight(SelectedTile, normalColor);
+                SetTileHighlight(SelectedTile, null, "Selection");
 
             SelectedTile = tile;
 
@@ -81,7 +86,7 @@ namespace HexGrid
                 return;
             }
 
-            SetTileHighlight(tile, selectColor);
+            SetTileHighlight(tile, selectColor, "Selection");
             Debug.Log($"Selected tile at {tile.HexCoordinates} of type {tile.TileType}");
 
             if (DefaultHexTileManager.Instance != null)
@@ -92,7 +97,7 @@ namespace HexGrid
         {
             // Remove highlight from previous tiles in range
             foreach (var tile in tilesInRange)
-                SetTileHighlight(tile, normalColor);
+                SetTileHighlight(tile, null, "Range");
 
             if (SelectedUnit != null && SelectedUnit != unit)
                 SelectedUnit.OnDeselected();
@@ -111,7 +116,7 @@ namespace HexGrid
             UpdateTilesInRange();
             // Highlight new tiles in range
             foreach (var tile in tilesInRange)
-                SetTileHighlight(tile, selectColor);
+                SetTileHighlight(tile, selectColor, "Range");
         }
 
         void HandleHover()
@@ -120,7 +125,7 @@ namespace HexGrid
             if (IsPointerOverUI)
             {
                 if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
-                    SetTileHighlight(hoveredTile, normalColor);
+                    SetTileHighlight(hoveredTile, null, "Hover");
                 hoveredTile = null;
                 return;
             }
@@ -128,9 +133,9 @@ namespace HexGrid
             HexTile tile = RaycastTile();
             // Only override color if not in tilesInRange
             if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
-                SetTileHighlight(hoveredTile, normalColor);
+                SetTileHighlight(hoveredTile, null, "Hover");
             if (tile != null && tile != SelectedTile && !tilesInRange.Contains(tile))
-                SetTileHighlight(tile, hoverColor);
+                SetTileHighlight(tile, hoverColor, "Hover");
             hoveredTile = tile;
         }
 
@@ -203,7 +208,7 @@ namespace HexGrid
         {
             // Remove highlight from all tiles in range
             foreach (var tile in tilesInRange)
-                SetTileHighlight(tile, normalColor);
+                SetTileHighlight(tile, null, "Range");
 
             // Deselect unit
             if (SelectedUnit != null)
@@ -215,7 +220,7 @@ namespace HexGrid
             // Deselect tile
             if (SelectedTile != null)
             {
-                SetTileHighlight(SelectedTile, normalColor);
+                SetTileHighlight(SelectedTile, null, "Selection");
                 SelectedTile = null;
             }
         }
@@ -241,7 +246,7 @@ namespace HexGrid
                 {
                     // Remove highlight from previous tiles in range
                     foreach (var t in tilesInRange)
-                        SetTileHighlight(t, normalColor);
+                        SetTileHighlight(t, null, "Range");
                     // Move the unit to the clicked tile
                     var godBeast = SelectedUnit as GodBeast.GodBeast;
                     if (godBeast != null)
@@ -275,7 +280,7 @@ namespace HexGrid
 
                 if (SelectedTile == tile)
                 {
-                    SetTileHighlight(SelectedTile, normalColor);
+                    SetTileHighlight(SelectedTile, null, "Selection");
                     SetSelectedTile(null);
                 }
                 else
@@ -407,18 +412,54 @@ namespace HexGrid
             return null;
         }
 
-        public void SetTileHighlight(HexTile tile, Color color)
+        // Set or clear a highlight for a specific owner. Passing `null` color removes that owner's highlight.
+        public void SetTileHighlight(HexTile tile, Color? color, string owner = "default")
         {
             if (tile == null) return;
-            var sr = tile.GetComponent<SpriteRenderer>();
-            if (sr != null)
+
+            // ensure entry
+            if (!tileHighlightOwners.TryGetValue(tile, out var owners))
             {
-                // Never override dim for unexplored tiles
-                if (!tile.isExplored)
-                    sr.color = new Color(0.2f, 0.2f, 0.2f, 1f);
-                else
-                    sr.color = color;
+                if (color == null)
+                    return; // nothing to remove
+                owners = new Dictionary<string, Color>();
+                tileHighlightOwners[tile] = owners;
             }
+
+            if (color == null)
+            {
+                // remove owner
+                if (owners.ContainsKey(owner))
+                    owners.Remove(owner);
+                if (owners.Count == 0)
+                    tileHighlightOwners.Remove(tile);
+            }
+            else
+            {
+                owners[owner] = color.Value;
+            }
+
+            // determine effective color by priority
+            Color? effective = null;
+            foreach (var p in highlightPriority)
+            {
+                if (owners != null && owners.TryGetValue(p, out var c))
+                {
+                    effective = c;
+                    break;
+                }
+            }
+            // fallback to any owner's color if none in priority list
+            if (effective == null && owners != null && owners.Count > 0)
+            {
+                foreach (var kv in owners)
+                {
+                    effective = kv.Value;
+                    break;
+                }
+            }
+
+            tile.SetHighlight(effective);
         }
     }
 }

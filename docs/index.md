@@ -11,16 +11,18 @@
 </nav>
 ---
 
-# GOD — Development Changelog 
+# GOD - Development Changelog 
 
 ---
 
 **Recent Changes (Assets/)**
 
-- **2025-12-09:** [`02094ce`](https://github.com/tmthyDXTR/god-game-dev/commit/02094cef63d0e98abfd26a70f51ed074a022c362) — deck debugger editor
+- **2025-12-10:** `{{COMMIT_SHA}} ` - non-destructive tile highlighting
+
+- **2025-12-09:** [`02094ce`](https://github.com/tmthyDXTR/god-game-dev/commit/02094cef63d0e98abfd26a70f51ed074a022c362) - deck debugger editor
   - Added `DeckManager` debug logs and small Editor debugger (Tools → Deck Debugger, Ctrl+D),
 
-- **2025-12-08:** [`6920049`](https://github.com/tmthyDXTR/god-game-dev/commit/6920049c080b7aecfc69b2b4b9f963bf436210aa) — prototype card + UI improvements
+- **2025-12-08:** [`6920049`](https://github.com/tmthyDXTR/god-game-dev/commit/6920049c080b7aecfc69b2b4b9f963bf436210aa) - prototype card + UI improvements
   - Added tile hover popup (runtime) and custom pixel font
   - Implemented `ForageCardSO` and `CardPlayManager` (play-on-map flow)
   - Added `CardTargetingController` for map targeting and tile highlight support
@@ -29,15 +31,15 @@
   - Improved hover baseline handling and arc layout so cards fan tighter with fewer cards
   - Misc: camera movement and small doc updates
 
-- **2025-12-05:** [`e06a773`](https://github.com/tmthyDXTR/god-game-dev/commit/e06a773ef4c4ad49dd1feda6200b13ffd021f990) — "auto insert hyperlinks to commit at sha in changelog" 
+- **2025-12-05:** [`e06a773`](https://github.com/tmthyDXTR/god-game-dev/commit/e06a773ef4c4ad49dd1feda6200b13ffd021f990) - "auto insert hyperlinks to commit at sha in changelog" 
 
-- **2025-12-04:** [`de34c9a`](https://github.com/tmthyDXTR/god-assets/commit/de34c9a)  — "gh pages deployment action to automate changelog sha insertion test"
+- **2025-12-04:** [`de34c9a`](https://github.com/tmthyDXTR/god-assets/commit/de34c9a)  - "gh pages deployment action to automate changelog sha insertion test"
 
-- **2025-12-01:** [`62a4364`](https://github.com/tmthyDXTR/god-assets/commit/62a4364)  — "prototype: population / worshiper system"
+- **2025-12-01:** [`62a4364`](https://github.com/tmthyDXTR/god-assets/commit/62a4364)  - "prototype: population / worshiper system"
   - Added a minimal population "worshiper" prototype under `Assets/Scripts/Prototype/`:
-  - `PopulationAgent.cs` — lightweight agent that can idle-wander inside a tile or move between tiles. Supports `StartMovement()` to begin inter-tile movement later.
-  - `PopulationManager.cs` — runtime pooling manager for agents, runtime-created tiny black sprite (no prefab required), spawn API `SpawnAgent(tile, stayOnTile=true)`, `StartAgentMovement(agent)`, and neighbor selection via `HexGridGenerator.tiles`.
-  - `PopulationTestSpawner.cs` — test spawner that places agents at the god-beast origin tile (`Hex(0,0)`) when available, with fallback test-grid creation.
+  - `PopulationAgent.cs` - lightweight agent that can idle-wander inside a tile or move between tiles. Supports `StartMovement()` to begin inter-tile movement later.
+  - `PopulationManager.cs` - runtime pooling manager for agents, runtime-created tiny black sprite (no prefab required), spawn API `SpawnAgent(tile, stayOnTile=true)`, `StartAgentMovement(agent)`, and neighbor selection via `HexGridGenerator.tiles`.
+  - `PopulationTestSpawner.cs` - test spawner that places agents at the god-beast origin tile (`Hex(0,0)`) when available, with fallback test-grid creation.
   - Hex tile integration:
   - `HexGrid/HexTile.cs` now includes a minimal `populationCount` field and `OnPopulationEnter/OnPopulationLeave` hooks so agents can update tile counts.
   - Behavior notes:
@@ -45,22 +47,22 @@
   - `PopulationManager.RequestNextMove` resolves neighbors via the existing `HexGridGenerator` and includes placeholder weights for future Faith/Heresy attraction/repulsion.
   - Quick testing: spawn and idle-visible behavior at the god-beast tile; call `PopulationManager.Instance.StartAgentMovement(agent)` to allow movement later.
 
-- **2025-11-28:** [`01a9d1b`](https://github.com/tmthyDXTR/god-assets/commit/01a9d1b) — "seperate enter exit hover anim duration"
+- **2025-11-28:** [`01a9d1b`](https://github.com/tmthyDXTR/god-assets/commit/01a9d1b) - "seperate enter exit hover anim duration"
   - Updated card visuals and timing: modified `Prefabs/CardPrefab.prefab` and `Scripts/Prototype/CardView.cs` to refine hover/enter/exit animation durations.
 
-- **2025-11-27:** [`75b3a07`](https://github.com/tmthyDXTR/god-assets/commit/75b3a07) — "arc, hand cards hover"
+- **2025-11-27:** [`75b3a07`](https://github.com/tmthyDXTR/god-assets/commit/75b3a07) - "arc, hand cards hover"
   - Added editor tooling for card view: `Editor/CardViewEditor.cs`.
   - Tweaked hand & arc layout visuals and card-prefab; updated `Scripts/Prototype/CardView.cs`, `Scripts/Prototype/ArcLayoutGroup.cs`, and relevant prefabs and scene (`Scenes/SampleScene.unity`).
   - (Repository housekeeping) removed some `FastScriptReload` packaged files under `Assets/`.
 
-- **2025-11-26:** [`15e5cb9`](https://github.com/tmthyDXTR/god-assets/commit/15e5cb9) / [`6c8c6f0`](https://github.com/tmthyDXTR/god-assets/commit/6c8c6f0) — "arc layout hand" / "card draw, hand, hover"
+- **2025-11-26:** [`15e5cb9`](https://github.com/tmthyDXTR/god-assets/commit/15e5cb9) / [`6c8c6f0`](https://github.com/tmthyDXTR/god-assets/commit/6c8c6f0) - "arc layout hand" / "card draw, hand, hover"
   - Prototype card system added: `Scripts/Prototype/CardSO.cs`, `CardInstance.cs`, `DeckManager.cs`, `DeckTest.cs`, `HandUI.cs`, `CardView.cs` and `Prefabs/CardPrefab.prefab` were introduced to support card draw, hand display, drag interactions and hover behavior.
   - God-beast data and resources: `Scripts/GodBeast/GodBeast.cs`, `GodBeastData.cs`, and `ResourceItem_Sap.asset` were added.
   - Inventory support: `Scripts/Inventory/ResourceItem.cs` added as a resource prototype.
   - Hex/tile updates: `HexGridGenerator.cs`, `HexTile.cs` and `MapData_7x7forest.asset` were updated/added to support the sample map.
   - Managers: `SelectionManager.cs` and `TurnManager.cs` received updates to integrate with card and turn flow.
 
-- **2025-11-18:** [`03f2723`](https://github.com/tmthyDXTR/god-assets/commit/03f2723) — "first"
+- **2025-11-18:** [`03f2723`](https://github.com/tmthyDXTR/god-assets/commit/03f2723) - "first"
   - Initial import of project assets and tooling; added core prefabs, hex tile assets, TextMesh Pro resources and supporting URP settings.
 
 ---
