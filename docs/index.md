@@ -17,7 +17,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-10:** `{{COMMIT_SHA}} ` - non-destructive tile highlighting
+- **2025-12-10:** `444fa40 ` - non-destructive tile highlighting
 
 - **2025-12-09:** [`02094ce`](https://github.com/tmthyDXTR/god-game-dev/commit/02094cef63d0e98abfd26a70f51ed074a022c362) - deck debugger editor
   - Added `DeckManager` debug logs and small Editor debugger (Tools → Deck Debugger, Ctrl+D),
