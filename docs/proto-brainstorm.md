@@ -1,13 +1,9 @@
 <link rel="stylesheet" href="assets/site.css">
 
-<nav>
-<ul style="list-style:none; padding:0; display:flex; gap:1rem;">
-  <li><a href="index.html">Home</a></li>
-  <li><a href="card-brainstorm.html">Card Ideas</a></li>
-  <li><a href="proto-brainstorm.html">Prototype Ideas</a></li>
-  <li><a href="localizationSetup.html">Localization Setup</a></li>
-</ul>
-</nav>
+
+<!-- AUTO_NAV_START -->
+<!-- AUTO_NAV_END -->
+
 
 TODO:
 

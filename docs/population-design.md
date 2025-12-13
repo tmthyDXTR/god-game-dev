@@ -1,3 +1,9 @@
+
+<!-- AUTO_NAV_START -->
+<!-- AUTO_NAV_END -->
+
+
+
 # Emergent Population & Colony Mechanics — Design
 
 This document sketches a practical, implementable design for emergent population mechanics (Dwarf Fortress / RimWorld style) tailored to this project and its core influences (Dark Souls, Dwarf Fortress, Darkest Dungeon, Spirit Island, Slay the Spire, The Settlers, Gods Will Be Watching, Jagged Alliance, etc.). It integrates with the existing hex-grid systems (`HexTile`, `SelectionManager`, card system) and the prototype vision in `proto-brainstorm.md` and `summary.md`.
