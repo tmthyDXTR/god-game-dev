@@ -17,7 +17,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-13:** `{{COMMIT_SHA}}` - tick system, materials resource, camp settlement
+- **2025-12-13:** [`fdf8519`](https://github.com/tmthyDXTR/god-game-dev/commit/fdf851995c4ffae1c9bf4ebcbd4ddd449a262db1) - tick system, materials resource, camp settlement
   - Debug HUD: refactored to show `Food / Materials / Faith`, display demand and predicted next-tick changes (gather - consumption).
   - Resource system: added `ResourceManager` preset support (scene default preset, apply in edit/play) and enhanced `ResourceDebugger` to seed/apply presets and register defaults.
   - Tick system: `ResourceTickManager` now supports `autoTick` vs manual ticks, `TriggerTick()` API
