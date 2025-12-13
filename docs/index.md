@@ -2,6 +2,15 @@
 <!-- Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces -->
 
 <!-- AUTO_NAV_START -->
+<nav>
+<ul style="list-style:none; padding:0; display:flex; gap:1rem;">
+  <li><a href="card-brainstorm.html">Card Brainstorm</a></li>
+  <li><a href="index.html">Index</a></li>
+  <li><a href="localizationSetup.html">LocalizationSetup</a></li>
+  <li><a href="population-design.html">Population Design</a></li>
+  <li><a href="proto-brainstorm.html">Proto Brainstorm</a></li>
+</ul>
+</nav>
 <!-- AUTO_NAV_END -->
 
 ---
@@ -11,6 +20,7 @@
 ---
 
 **Recent Changes (Assets/)**
+
 
 - **2025-12-13:** [`fdf8519`](https://github.com/tmthyDXTR/god-game-dev/commit/fdf851995c4ffae1c9bf4ebcbd4ddd449a262db1) - tick system, materials resource, camp settlement
   - Debug HUD: refactored to show `Food / Materials / Faith`, display demand and predicted next-tick changes (gather - consumption).

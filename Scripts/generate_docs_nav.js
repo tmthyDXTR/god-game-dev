@@ -28,6 +28,22 @@ if (files.length === 0) {
   process.exit(0);
 }
 
+// CLI flags: --show (print generated nav), --force (write even if identical), --dry-run (no writes)
+const args = process.argv.slice(2);
+const optShow = args.includes('--show');
+const optForce = args.includes('--force');
+const optDryRun = args.includes('--dry-run') || args.includes('--dryrun');
+
+console.log('Docs generator: using docs directory:', docsDir);
+console.log('Options: show=', optShow, 'force=', optForce, 'dry-run=', optDryRun);
+// Determine which script path was used (helpful for CI logs)
+try {
+  const scriptPath = fs.realpathSync(__filename);
+  console.log('Docs generator: running script:', scriptPath);
+} catch (e) {
+  // ignore
+}
+
 function humanize(name) {
 //   if (name === 'index') return 'Home';
   return name.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -53,18 +69,49 @@ navLines.push('</nav>');
 navLines.push(endMarker);
 const navBlock = navLines.join('\n');
 
+if (optShow) {
+  console.log('\n--- Generated nav block ---\n');
+  console.log(navBlock);
+  console.log('\n--- end nav block ---\n');
+}
+
 files.forEach(file => {
   const filePath = path.join(docsDir, file);
   let content = fs.readFileSync(filePath, 'utf8');
-  if (content.includes(startMarker) && content.includes(endMarker)) {
-    const regex = new RegExp(`${startMarker}[\s\S]*?${endMarker}`, 'm');
-    content = content.replace(regex, navBlock);
-    fs.writeFileSync(filePath, content, 'utf8');
-    console.log('Updated nav in', file);
+  let newContent;
+  const hasMarkers = content.includes(startMarker) && content.includes(endMarker);
+  const regex = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`, 'm');
+
+  if (hasMarkers) {
+    newContent = content.replace(regex, navBlock);
+    if (newContent === content) {
+      if (optForce) {
+        if (optDryRun) {
+          console.log('Would force rewrite (dry-run) for', file);
+        } else {
+          fs.writeFileSync(filePath, newContent, 'utf8');
+          console.log('Forced rewrite (identical content) for', file);
+        }
+      } else {
+        console.log('No change needed for', file);
+      }
+      return;
+    }
+
+    if (optDryRun) {
+      console.log('Would update nav in', file);
+    } else {
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      console.log('Updated nav in', file);
+    }
   } else {
-    content = navBlock + '\n\n' + content;
-    fs.writeFileSync(filePath, content, 'utf8');
-    console.log('Inserted nav in', file);
+    newContent = navBlock + '\n\n' + content;
+    if (optDryRun) {
+      console.log('Would insert nav in', file);
+    } else {
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      console.log('Inserted nav in', file);
+    }
   }
 });
 
