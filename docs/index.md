@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="assets/site.css">
 <!-- Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces -->
 
 <!-- AUTO_NAV_START -->

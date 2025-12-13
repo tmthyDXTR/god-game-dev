@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="assets/site.css">
-
 <!-- AUTO_NAV_START -->
 <nav>
 <ul style="list-style:none; padding:0; display:flex; gap:1rem;">
@@ -26,7 +24,7 @@ Goal
 
 Prerequisites
 -------------
-- Unity Editor (project already contains TextMeshPro and UI). 
+- Unity Editor (project already contains TextMeshPro and UI).
 - Install the Unity Localization package via Package Manager: Window → Package Manager → search "Localization" → Install.
 
 Quick Steps (Editor)
@@ -137,7 +135,7 @@ Recommended file/key naming convention
 
 Next steps I can help with
 -------------------------
-- Patch `CardSO`/`CardView` across your repo to use `LocalizedString` with graceful fallbacks (I already made a sample change earlier). 
+- Patch `CardSO`/`CardView` across your repo to use `LocalizedString` with graceful fallbacks (I already made a sample change earlier).
 - Add a small editor script to batch-create string keys from existing cards and populate the default locale.
 - Add pseudo-locale entries and a small QA script to flag missing translations.
 

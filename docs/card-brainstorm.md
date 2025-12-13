@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="assets/site.css">
-
 <!-- AUTO_NAV_START -->
 <nav>
 <ul style="list-style:none; padding:0; display:flex; gap:1rem;">
