@@ -24,7 +24,7 @@ jobs:
 
       - name: Run docs nav generator
         run: |
-          node scripts/generate_docs_nav.js
+          node Scripts/generate_docs_nav.js
 
       - name: Commit changes
         run: |
