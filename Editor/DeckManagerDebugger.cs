@@ -26,7 +26,7 @@ public class DeckManagerDebugger : EditorWindow
         {
             if (GUILayout.Button("Find DeckManager in Scene"))
             {
-                deck = FindObjectOfType<DeckManager>();
+                deck = FindFirstObjectByType<DeckManager>();
                 if (deck == null) Debug.LogWarning("No DeckManager found in the active scene.");
             }
             return;

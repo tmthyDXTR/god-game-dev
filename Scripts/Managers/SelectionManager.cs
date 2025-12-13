@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Resources;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -261,9 +262,15 @@ namespace HexGrid
                         {
                             foreach (var kvp in tile.resourceAmounts)
                             {
-                                if (kvp.Key == ResourceType.Food || kvp.Key == ResourceType.Sap)
+                                // Animate collection for supported global resources and add to global store
+                                if (kvp.Key == Managers.ResourceManager.GameResource.Food || kvp.Key == Managers.ResourceManager.GameResource.Faith || kvp.Key == Managers.ResourceManager.GameResource.Materials)
                                 {
                                     debugMenu.AnimateResourceCollection(tile.transform.position, kvp.Key, kvp.Value);
+                                    var rm = Managers.ResourceManager.Instance;
+                                    if (rm != null)
+                                    {
+                                        rm.AddResource(kvp.Key, kvp.Value);
+                                    }
                                 }
                             }
                         }

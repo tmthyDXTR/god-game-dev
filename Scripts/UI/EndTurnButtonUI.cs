@@ -69,8 +69,10 @@ namespace UI
 
         private void OnEndTurnClicked()
         {
-            if (turnManager != null)
-                turnManager.EndTurn();
+            // Resolve TurnManager at click time to be resilient to object re-creation.
+            var tm = turnManager != null ? turnManager : FindFirstObjectByType<TurnManager>();
+            if (tm != null)
+                tm.EndTurn();
         }
     }
 }

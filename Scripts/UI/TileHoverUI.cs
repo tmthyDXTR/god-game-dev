@@ -66,7 +66,11 @@ public class TileHoverUI : MonoBehaviour
             var tile = hit.collider.GetComponent<HexTile>();
             if (tile != null)
             {
-                ShowPopup(tile, mousePos);
+                // Only show popup for explored tiles
+                if (tile.isExplored)
+                    ShowPopup(tile, mousePos);
+                else
+                    HidePopup();
                 return;
             }
         }
@@ -82,11 +86,11 @@ public class TileHoverUI : MonoBehaviour
 
         // Update text content (concise, relevant info)
         titleText.text = tile.TileType.ToString();
-        int food = tile.GetResourceAmount(ResourceType.Food);
-        int sap = tile.GetResourceAmount(ResourceType.Sap);
+        int food = tile.GetResourceAmount(Managers.ResourceManager.GameResource.Food);
+        int materials = tile.GetResourceAmount(Managers.ResourceManager.GameResource.Materials);
         string resources = "";
         if (food > 0) resources += $"Food: {food}\n";
-        if (sap > 0) resources += $"Sap: {sap}\n";
+        if (materials > 0) resources += $"Materials: {materials}\n";
 
         bodyText.text = $"Pop: {tile.populationCount}\n" +
                         resources +

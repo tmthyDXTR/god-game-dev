@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HexGrid
 {
-    public enum ResourceType { None, Sap, Food }
+    // ResourceType removed; use Managers.ResourceManager.GameResource throughout.
 
     public class HexTile : MonoBehaviour
     {
@@ -27,21 +27,21 @@ namespace HexGrid
 
         [Header("Resource Icons")]
         public Sprite foodIcon;
-        public Sprite sapIcon;
+        public Sprite materialsIcon;
         private List<GameObject> foodIcons = new List<GameObject>();
-        private List<GameObject> sapIcons = new List<GameObject>();
+        private List<GameObject> materialsIcons = new List<GameObject>();
         // Overlay object used to show infestation using the bone sprite scaled by level
         private GameObject infestationOverlay = null;
 
-        // Resource amounts for each type
-        public Dictionary<ResourceType, int> resourceAmounts = new Dictionary<ResourceType, int>();
+        // Resource amounts for each type (use global GameResource enum)
+        public System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int> resourceAmounts = new System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int>();
 
         // Infestation level for BoneBloom: 0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (becomes Bone tile)
         [Tooltip("0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (converts to Bone)")]
         public int InfestationLevel = 0;
 
         // Add resource to tile
-        public void AddResource(ResourceType type, int amount)
+        public void AddResource(Managers.ResourceManager.GameResource type, int amount)
         {
             if (resourceAmounts.ContainsKey(type))
                 resourceAmounts[type] += amount;
@@ -49,7 +49,7 @@ namespace HexGrid
                 resourceAmounts[type] = amount;
             UpdateResourceIcons();
         }
-        public int GetResourceAmount(ResourceType type)
+        public int GetResourceAmount(Managers.ResourceManager.GameResource type)
         {
             if (resourceAmounts.TryGetValue(type, out int value))
                 return value;
@@ -57,7 +57,7 @@ namespace HexGrid
         }
 
         // Remove resource from tile
-        public void RemoveResource(ResourceType type, int amount)
+        public void RemoveResource(Managers.ResourceManager.GameResource type, int amount)
         {
             if (resourceAmounts.ContainsKey(type))
             {
@@ -178,11 +178,20 @@ namespace HexGrid
                     spriteRenderer.sprite = grassSprite;
                     break;
             }
-            // Dim unexplored tiles; otherwise use default white color.
+            // Fully hide unexplored tiles: disable the base sprite renderer so nothing shows.
+            // When explored, enable renderer and show normally.
             if (!isExplored)
-                spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, 1f); // dark
+            {
+                if (spriteRenderer != null) spriteRenderer.enabled = false;
+            }
             else
-                spriteRenderer.color = Color.white;
+            {
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.enabled = true;
+                    spriteRenderer.color = Color.white;
+                }
+            }
             // Keep highlight sprite in sync with base sprite
             if (highlightRenderer != null)
             {
@@ -223,6 +232,9 @@ namespace HexGrid
                 infestationOverlay = null;
             }
 
+            // Don't show infestation overlay on unexplored tiles
+            if (!isExplored) return;
+
             if (InfestationLevel <= 0)
                 return;
 
@@ -252,20 +264,22 @@ namespace HexGrid
             infestationOverlay.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
-        // Visualize food and sap amount with icons
+        // Visualize food and materials amount with icons
         public void UpdateResourceIcons()
         {
             // Remove old icons
             foreach (var icon in foodIcons)
                 if (icon != null) DestroyImmediate(icon);
             foodIcons.Clear();
-            foreach (var icon in sapIcons)
+            foreach (var icon in materialsIcons)
                 if (icon != null) DestroyImmediate(icon);
-            sapIcons.Clear();
+            materialsIcons.Clear();
 
-            int foodAmount = GetResourceAmount(ResourceType.Food);
-            int sapAmount = GetResourceAmount(ResourceType.Sap);
+            // Don't display resource icons for unexplored tiles
+            if (!isExplored) return;
 
+            int foodAmount = GetResourceAmount(Managers.ResourceManager.GameResource.Food);
+            int materialsAmount = GetResourceAmount(Managers.ResourceManager.GameResource.Materials);
             // Food icons (top row)
             if (foodIcon != null && foodAmount > 0)
             {
@@ -284,22 +298,22 @@ namespace HexGrid
                     foodIcons.Add(go);
                 }
             }
-            // Sap icons (row below food)
-            if (sapIcon != null && sapAmount > 0)
+            // Materials icons (row below food)
+            if (materialsIcon != null && materialsAmount > 0)
             {
                 float spacing = 0.4f;
-                float startX = -((sapAmount - 1) * spacing) / 2f;
+                float startX = -((materialsAmount - 1) * spacing) / 2f;
                 float y = (foodAmount > 0) ? -1f : 0.4f; // below food if food exists, else top row
-                for (int i = 0; i < sapAmount; i++)
+                for (int i = 0; i < materialsAmount; i++)
                 {
-                    var go = new GameObject("SapIcon");
+                    var go = new GameObject("MaterialsIcon");
                     go.transform.SetParent(transform);
                     go.transform.localPosition = new Vector3(startX + i * spacing, y, -0.1f);
                     go.transform.localScale = Vector3.one;
                     var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = sapIcon;
+                    sr.sprite = materialsIcon;
                     sr.sortingOrder = 11;
-                    sapIcons.Add(go);
+                    materialsIcons.Add(go);
                 }
             }
         }

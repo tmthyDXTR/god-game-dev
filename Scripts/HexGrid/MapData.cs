@@ -6,7 +6,7 @@ namespace HexGrid
     [System.Serializable]
     public class ResourceRecord
     {
-        public ResourceType type;
+        public Managers.ResourceManager.GameResource type;
         public int amount;
     }
 

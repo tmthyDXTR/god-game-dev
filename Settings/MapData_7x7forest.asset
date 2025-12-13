@@ -38,17 +38,17 @@ MonoBehaviour:
     s: 3
     type: 1
     resources:
-    - type: 2
+    - type: 0
       amount: 2
+    - type: 1
+      amount: 3
   - q: -2
     r: 0
     s: 2
     type: 1
     resources:
-    - type: 2
-      amount: 3
     - type: 1
-      amount: 1
+      amount: 2
   - q: -2
     r: 1
     s: 1
@@ -69,8 +69,10 @@ MonoBehaviour:
     s: 3
     type: 1
     resources:
-    - type: 2
-      amount: 2
+    - type: 0
+      amount: 1
+    - type: 1
+      amount: 1
   - q: -1
     r: -1
     s: 2
@@ -121,8 +123,10 @@ MonoBehaviour:
     s: -1
     type: 1
     resources:
-    - type: 2
-      amount: 1
+    - type: 0
+      amount: 3
+    - type: 1
+      amount: 2
   - q: 0
     r: 2
     s: -2
@@ -153,7 +157,7 @@ MonoBehaviour:
     s: -1
     type: 1
     resources:
-    - type: 2
+    - type: 0
       amount: 1
     - type: 1
       amount: 2
@@ -172,26 +176,36 @@ MonoBehaviour:
     s: 1
     type: 1
     resources:
-    - type: 2
-      amount: 1
+    - type: 0
+      amount: 2
+    - type: 1
+      amount: 2
   - q: 2
     r: -2
     s: 0
     type: 1
     resources:
-    - type: 2
-      amount: 3
+    - type: 0
+      amount: 1
+    - type: 1
+      amount: 1
   - q: 2
     r: -1
     s: -1
     type: 1
-    resources: []
+    resources:
+    - type: 0
+      amount: 1
+    - type: 1
+      amount: 2
   - q: 2
     r: 0
     s: -2
     type: 1
     resources:
-    - type: 2
+    - type: 0
+      amount: 2
+    - type: 1
       amount: 2
   - q: 2
     r: 1
@@ -208,7 +222,9 @@ MonoBehaviour:
     s: -1
     type: 1
     resources:
-    - type: 2
+    - type: 0
+      amount: 2
+    - type: 1
       amount: 1
   - q: 3
     r: -1

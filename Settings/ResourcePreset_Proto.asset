@@ -9,10 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 729db5b4f5a66e943863e3ef5e352fd2, type: 3}
-  m_Name: GodBeastData_Rooty
-  m_EditorClassIdentifier: Assembly-CSharp::GameData.GodBeastData
-  beastName: Rooty
-  startingResources: []
-  perTurnResource: {fileID: 0}
-  perTurnAmount: 1
+  m_Script: {fileID: 11500000, guid: c091b0b14d0c0a4418b50fc9c08eef5f, type: 3}
+  m_Name: ResourcePreset_Proto
+  m_EditorClassIdentifier: Assembly-CSharp::Managers.ResourcePreset
+  food: 10
+  materials: 0
+  faith: 5

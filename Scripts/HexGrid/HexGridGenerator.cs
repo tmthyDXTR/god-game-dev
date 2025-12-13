@@ -72,7 +72,7 @@ namespace HexGrid
         }
 
         // Generic method to add resources to tiles of a given type using a probability chart
-        public void AddResourceToTiles(ResourceType resourceType, HexTileType targetTileType, float[] probabilityChart)
+        public void AddResourceToTiles(Managers.ResourceManager.GameResource resourceType, HexTileType targetTileType, float[] probabilityChart)
         {
             var rand = new System.Random();
             int forestCount = 0;
@@ -99,27 +99,45 @@ namespace HexGrid
         // Helper for probability chart (e.g. [0.4f, 0.3f, 0.2f, 0.1f] for 0-3)
         private int GetRandomResourceAmount(System.Random rand, float[] probabilityChart)
         {
-            double roll = rand.NextDouble();
+            if (probabilityChart == null || probabilityChart.Length == 0)
+                return 0;
+
+            // Allow callers to pass non-normalized probability charts.
+            // We scale the random roll by the total of the (non-negative) probabilities
+            // so that indexes with zero probability are never returned unless
+            // every entry is zero.
+            float total = 0f;
+            for (int i = 0; i < probabilityChart.Length; i++)
+            {
+                total += Mathf.Max(0f, probabilityChart[i]);
+            }
+
+            if (total <= 0f)
+                return 0;
+
+            double roll = rand.NextDouble() * total;
             float cumulative = 0f;
             for (int i = 0; i < probabilityChart.Length; i++)
             {
-                cumulative += probabilityChart[i];
+                cumulative += Mathf.Max(0f, probabilityChart[i]);
                 if (roll < cumulative)
-                    return i; // allow zero as valid amount
+                    return i; // index corresponds to amount
             }
-            return 0; // fallback to zero
+
+            // As a safety fallback (shouldn't happen), return the largest amount index
+            return probabilityChart.Length - 1;
         }
 
         public void AddFoodResourcesToForestTiles()
         {
             float[] foodProbabilities = { 0.0f, 0.5f, 0.2f, 0.1f };
-            AddResourceToTiles(ResourceType.Food, HexTileType.Forest, foodProbabilities);
+            AddResourceToTiles(Managers.ResourceManager.GameResource.Food, HexTileType.Forest, foodProbabilities);
         }
 
-        public void AddSapResourcesToForestTiles()
+        public void AddMaterialsResourcesToForestTiles()
         {
-            float[] sapProbabilities = { 0.6f, 0.3f, 0.05f, 0.2f };
-            AddResourceToTiles(ResourceType.Sap, HexTileType.Forest, sapProbabilities);
+            float[] materialsProbabilities = { 0.0f, 0.4f, 0.5f, 0.1f };
+            AddResourceToTiles(Managers.ResourceManager.GameResource.Materials, HexTileType.Forest, materialsProbabilities);
         }
 
         

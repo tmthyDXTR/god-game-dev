@@ -77,23 +77,33 @@ namespace GodBeast
 
 
         // Generic inventory accessors
-        public int GetResourceAmount(global::Inventory.ResourceItem item)
+        /// <summary>
+        /// Return the amount of the given <see cref="Inventory.ResourceItem"/> in the beast's runtime inventory.
+        /// </summary>
+        public int GetInventoryAmount(global::Inventory.ResourceItem item)
         {
             if (item == null) return 0;
             if (inventory.TryGetValue(item, out var v)) return v;
             return 0;
         }
 
+        /// <summary>
+        /// Modify the stored amount of <paramref name="item"/> by <paramref name="delta"/> (can be negative).
+        /// Amounts are clamped to zero.
+        /// </summary>
         public void ModifyResource(global::Inventory.ResourceItem item, int delta)
         {
             if (item == null) return;
-            var cur = GetResourceAmount(item);
+            var cur = GetInventoryAmount(item);
             var next = cur + delta;
             if (next < 0) next = 0;
             inventory[item] = next;
             // Keep nothing else in sync here; systems should use ResourceItem-based APIs
         }
 
+        /// <summary>
+        /// Convenience: consume the given amount (reduces stored amount).
+        /// </summary>
         public void ConsumeResource(global::Inventory.ResourceItem item, int amount)
         {
             ModifyResource(item, -amount);

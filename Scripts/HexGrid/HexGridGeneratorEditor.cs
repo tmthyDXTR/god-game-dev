@@ -23,9 +23,9 @@ namespace HexGrid
                 {
                     generator.AddFoodResourcesToForestTiles();
                 }
-                if (GUILayout.Button("Add Sap Resources to Forest Tiles"))
+                if (GUILayout.Button("Add Materials Resources to Forest Tiles"))
                 {
-                    generator.AddSapResourcesToForestTiles();
+                    generator.AddMaterialsResourcesToForestTiles();
                 }
                 if (GUILayout.Button("Remove All Resources from Tiles"))
                 {

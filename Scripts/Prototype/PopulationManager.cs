@@ -85,6 +85,17 @@ public class PopulationManager : MonoBehaviour
 
     public void DespawnAgent(PopulationAgent agent)
     {
+        if (agent == null) return;
+        // Inform the tile that the agent is leaving so populationCount stays correct
+        try
+        {
+            if (agent.currentTile != null)
+            {
+                agent.currentTile.OnPopulationLeave(agent);
+                agent.currentTile = null;
+            }
+        }
+        catch { }
         agent.gameObject.SetActive(false);
         pool.Enqueue(agent.gameObject);
     }

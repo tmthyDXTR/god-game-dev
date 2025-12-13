@@ -44,7 +44,7 @@ namespace Prototype.Cards
                 return;
             }
 
-            tile.AddResource(ResourceType.Food, amount);
+            tile.AddResource(Managers.ResourceManager.GameResource.Food, amount);
             Debug.Log($"ForageCard '{cardName}' added {amount} Food to tile {tile.name}");
         }
     }

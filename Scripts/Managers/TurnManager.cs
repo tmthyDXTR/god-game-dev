@@ -32,7 +32,7 @@ namespace Managers
                     data = dataField.GetValue(godBeast) as GameData.GodBeastData;
                 if (data != null && data.perTurnResource != null)
                 {
-                    int current = godBeast.GetResourceAmount(data.perTurnResource);
+                    int current = godBeast.GetInventoryAmount(data.perTurnResource);
                     debugMenuUI.UpdateSap(current);
                     debugMenuUI.ShowSapWarning(current);
                 }
@@ -41,11 +41,26 @@ namespace Managers
 
         public void EndTurn()
         {
-            if (isGameOver) return;
+            Debug.Log("TurnManager.EndTurn called");
+            if (isGameOver) {
+                Debug.Log("TurnManager: game is over, ignoring EndTurn");
+                return;
+            }
             turnCount++;
             EndTurnConsume();
             // Spread BoneBloom after resource consumption
             SpreadBoneBloom();
+            // If ResourceTickManager is in manual mode, trigger its tick at end of turn
+            var rt = FindFirstObjectByType<Managers.ResourceTickManager>();
+            if (rt != null && !rt.autoTick)
+            {
+                Debug.Log("TurnManager: triggering manual ResourceTick");
+                rt.TriggerTick();
+                Debug.Log("TurnManager: manual ResourceTick complete");
+                // Optionally update debug UI
+                if (debugMenuUI != null)
+                    debugMenuUI.RefreshAllResources();
+            }
             // Add other end turn logic here (e.g., Warden food, Bloom spread)
         }
 
@@ -123,8 +138,10 @@ namespace Managers
             }
 
             // consume the configured resource and amount
+            Debug.Log($"TurnManager: consuming {data.perTurnAmount} of {data.perTurnResource?.displayName} from GodBeast (before consumption amount = {godBeast.GetInventoryAmount(data.perTurnResource)})");
             godBeast.ConsumeResource(data.perTurnResource, data.perTurnAmount);
-            int remaining = godBeast.GetResourceAmount(data.perTurnResource);
+            int remaining = godBeast.GetInventoryAmount(data.perTurnResource);
+            Debug.Log($"TurnManager: after consumption remaining {data.perTurnResource?.displayName} = {remaining}");
             if (debugMenuUI != null)
                 debugMenuUI.UpdateSap(remaining);
             if (remaining <= sapWarningThreshold && debugMenuUI != null)

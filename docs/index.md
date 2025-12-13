@@ -17,7 +17,15 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-10:** `444fa40 ` - non-destructive tile highlighting
+- **2025-12-13:** `{{COMMIT_SHA}}` - tick system, materials resource, camp settlement
+  - Debug HUD: refactored to show `Food / Materials / Faith`, display demand and predicted next-tick changes (gather - consumption).
+  - Resource system: added `ResourceManager` preset support (scene default preset, apply in edit/play) and enhanced `ResourceDebugger` to seed/apply presets and register defaults.
+  - Tick system: `ResourceTickManager` now supports `autoTick` vs manual ticks, `TriggerTick()` API
+  - Turn & UI flow: `TurnManager` triggers manual tick on EndTurn when autoTick is off; added consumption logs and game-over handling tweaks. EndTurn button now resolves manager at click time.
+  - Debugging helpers: added console logs around ticks/consumption and a "Force Continue" debug button to clear `isGameOver` during testing.
+  - Added materials resource (replaced sap for now) for forest tiles, maybe in future split to several resources like lumber, stone etc
+
+- **2025-12-10:** [`444fa40`](https://github.com/tmthyDXTR/god-game-dev/commit/444fa4035f428afa93e294100450d223a8ce7672) - non-destructive tile highlighting
 
 - **2025-12-09:** [`02094ce`](https://github.com/tmthyDXTR/god-game-dev/commit/02094cef63d0e98abfd26a70f51ed074a022c362) - deck debugger editor
   - Added `DeckManager` debug logs and small Editor debugger (Tools → Deck Debugger, Ctrl+D),
