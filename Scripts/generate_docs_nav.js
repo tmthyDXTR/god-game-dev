@@ -5,8 +5,8 @@ const path = require('path');
 // This script works when the repository root is either the project root
 // (where `Assets/docs` exists) or the `Assets/` folder itself (where `docs` exists).
 const candidates = [
-  path.join(process.cwd(), 'Assets', 'docs'),
-  path.join(process.cwd(), 'docs')
+  path.join(process.cwd(),'..', 'Assets', 'docs'),
+  path.join(process.cwd(), '..', 'docs')
 ];
 
 let docsDir = null;

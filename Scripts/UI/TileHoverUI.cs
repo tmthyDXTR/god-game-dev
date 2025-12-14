@@ -7,6 +7,7 @@ using TMPro;
 
 // Simple hover popup for HexTile info.
 // Attach to an active GameObject (e.g. UI manager). Assign references in inspector.
+// TODO: refaname to HoverUI
 public class TileHoverUI : MonoBehaviour
 {
     [Header("References")]
@@ -20,6 +21,11 @@ public class TileHoverUI : MonoBehaviour
     public TextMeshProUGUI titleText;
     [Tooltip("Text element for the body/details.")]
     public TextMeshProUGUI bodyText;
+    [Header("Unit Popup (optional)")]
+    [Tooltip("Optional separate popup panel for units/agents (e.g. duplicated TileInfoPopup named 'unitinfopopup').")]
+    public GameObject unitPopupPanel;
+    public TextMeshProUGUI unitTitleText;
+    public TextMeshProUGUI unitBodyText;
 
     [Header("Raycast")]
     [Tooltip("Layer mask for tiles (create a 'Tiles' layer and assign to hex tile GameObjects).")]
@@ -59,19 +65,36 @@ public class TileHoverUI : MonoBehaviour
         Vector3 worldPoint = worldCamera != null ? worldCamera.ScreenToWorldPoint(mousePos) : Vector3.zero;
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
-        // Physics2D Raycast: for 2D tiled map (sprite + collider)
-        RaycastHit2D hit = Physics2D.Raycast(worldPoint2D, Vector2.zero, 0f, tileLayerMask);
-        if (hit.collider != null)
+        // Physics2D RaycastAll: check for agents first, then tiles.
+        var hits = Physics2D.RaycastAll(worldPoint2D, Vector2.zero, 0f);
+        if (hits != null && hits.Length > 0)
         {
-            var tile = hit.collider.GetComponent<HexTile>();
-            if (tile != null)
+            // Priority: PopulationAgent (unit) over tiles
+            foreach (var h in hits)
             {
-                // Only show popup for explored tiles
-                if (tile.isExplored)
-                    ShowPopup(tile, mousePos);
-                else
-                    HidePopup();
-                return;
+                if (h.collider == null) continue;
+                var agent = h.collider.GetComponentInParent<PopulationAgent>();
+                if (agent != null)
+                {
+                    // show unit popup
+                    ShowUnitPopup(agent, mousePos);
+                    return;
+                }
+            }
+
+            // If no agent, look for tile
+            foreach (var h in hits)
+            {
+                if (h.collider == null) continue;
+                var tile = h.collider.GetComponent<HexTile>();
+                if (tile != null)
+                {
+                    if (tile.isExplored)
+                        ShowPopup(tile, mousePos);
+                    else
+                        HidePopup();
+                    return;
+                }
             }
         }
 
@@ -83,6 +106,10 @@ public class TileHoverUI : MonoBehaviour
     {
         if (popupPanel == null || titleText == null || bodyText == null || uiCanvas == null)
             return;
+
+        // Ensure unit popup hidden when showing tile popup
+        if (unitPopupPanel != null && unitPopupPanel.activeSelf)
+            unitPopupPanel.SetActive(false);
 
         // Update text content (concise, relevant info)
         titleText.text = tile.TileType.ToString();
@@ -109,10 +136,57 @@ public class TileHoverUI : MonoBehaviour
         popupRect.anchoredPosition = anchoredPos;
     }
 
+    void ShowUnitPopup(PopulationAgent agent, Vector3 screenPos)
+    {
+        if (unitPopupPanel == null || unitTitleText == null || unitBodyText == null || uiCanvas == null)
+        {
+            // fallback to tile popup if unit popup not configured
+            HidePopup();
+            return;
+        }
+
+        // Build unit info text
+        unitTitleText.text = agent.name;
+        string traits = "";
+        if (agent.traits != null && agent.traits.Count > 0)
+        {
+            foreach (var t in agent.traits)
+            {
+                if (t == null) continue;
+                traits += $"- {t.displayName}\n";
+            }
+        }
+        else traits = "(none)\n";
+
+        unitBodyText.text = $"Health: {agent.health}\n" +
+                             $"Strength: {agent.strength}\n" +
+                             $"Carry: {agent.GetCarryCapacity()}\n" +
+                             $"Gather x{agent.GetGatherMultiplier():0.##}\n" +
+                             $"Traits:\n{traits}";
+
+        // Ensure tile popup is hidden when showing unit popup
+        if (popupPanel != null && popupPanel.activeSelf)
+            popupPanel.SetActive(false);
+
+        if (!unitPopupPanel.activeSelf) unitPopupPanel.SetActive(true);
+
+        // Position similarly to tile popup
+        RectTransform unitRect = unitPopupPanel.GetComponent<RectTransform>();
+        Vector2 anchoredPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+              uiCanvas.transform as RectTransform,
+              screenPos + (Vector3)popupOffset,
+              uiCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : uiCanvas.worldCamera,
+              out anchoredPos);
+        unitRect.anchoredPosition = anchoredPos;
+    }
+
     void HidePopup()
     {
         if (popupPanel != null && popupPanel.activeSelf)
             popupPanel.SetActive(false);
+        if (unitPopupPanel != null && unitPopupPanel.activeSelf)
+            unitPopupPanel.SetActive(false);
     }
 
     void OnDisable()

@@ -6,25 +6,10 @@
   <li><a href="localizationSetup.html">LocalizationSetup</a></li>
   <li><a href="population-design.html">Population Design</a></li>
   <li><a href="proto-brainstorm.html">Proto Brainstorm</a></li>
+  <li><a href="todo.html">Todo</a></li>
 </ul>
 </nav>
 <!-- AUTO_NAV_END -->
-
-
-TODO:
-
-
-
-2. 
-
-3. card play targeting
-
-
-Disable other input while targeting (e.g., prevent moving units).
-Show card tooltip/cost while targeting.
-Only highlight tiles in a limited radius or meeting additional card-specific conditions (override CanTarget in card subclasses).
-
-4. Move n amount population to another tile implementation
 
 
 # proto brainstorm

@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using HexGrid;
+using Prototype.Traits;
 
 public class PopulationAgent : MonoBehaviour
 {
@@ -7,6 +9,34 @@ public class PopulationAgent : MonoBehaviour
     public HexTile currentTile;
     HexTile targetTile;
     bool stayOnTile = false;
+
+    public enum BaseStat {
+        startingTraitsAmount,
+        Health,
+        Strength,
+    }
+    
+    [Header("Traits")]
+    public List<TraitSO> traits = new List<TraitSO>();
+
+
+    [Header("Base Stats")]
+    // Concrete sampled stat values (set at Initialize)
+    [Tooltip("Number of starting traits assigned to this agent after sampling the distribution")]
+    public int startingTraitsAmount = 1;
+    [Tooltip("Agent health value sampled from the health distribution")]
+    public int health = 1;
+    [Tooltip("Agent strength value sampled from the strength distribution")]
+    public int strength = 1;
+
+    [Tooltip("Base carry capacity used by GetCarryCapacity before trait modifiers")]
+    public int baseCarryCapacity = 1;
+    [Tooltip("Base gather multiplier used by GetGatherMultiplier before trait modifiers")]
+    public float baseGatherMultiplier = 1f;
+
+    [Header("Stat Distributions (probability charts)")]
+    [Tooltip("Centralized stat chart ScriptableObject (use this; per-agent arrays removed).")]
+    public Prototype.StatChartSO statChart;
 
     // local wandering
     Vector3 localTarget;
@@ -34,7 +64,76 @@ public class PopulationAgent : MonoBehaviour
             sr.sortingOrder = 20;
         }
         // Set transform scale
-        transform.localScale = Vector3.one * 4f;
+        // TODO: make this configurable depending on stats like strength ie?
+        // transform.localScale = Vector3.one * 4f;
+
+        // Sample base stats from configured probability charts
+        // (if the charts are not provided, keep defaults)
+        // Prefer charts from the centralized `statChart` asset if provided, otherwise fall back to per-agent arrays
+        var startChart = statChart != null ? statChart.startingTraitsAmountChart : null;
+        var startValues = statChart != null ? statChart.startingTraitsAmountValues : null;
+        startingTraitsAmount = SampleStatFromChart(startChart, startValues, startingTraitsAmount);
+
+        var hChart = statChart != null ? statChart.healthChart : null;
+        var hValues = statChart != null ? statChart.healthValues : null;
+        health = SampleStatFromChart(hChart, hValues, health);
+
+        var sChart = statChart != null ? statChart.strengthChart : null;
+        var sValues = statChart != null ? statChart.strengthValues : null;
+        strength = SampleStatFromChart(sChart, sValues, strength);
+
+        // Give starting random traits
+        for (int i = 0; i < startingTraitsAmount; i++)
+        {
+            var trait = Managers.TraitManager.Instance != null ? Managers.TraitManager.Instance.GetRandomTrait() : null;
+            AddTrait(trait);
+        }
+    }
+
+    // Trait helpers
+    public bool HasTrait(string traitId)
+    {
+        if (string.IsNullOrEmpty(traitId)) return false;
+        foreach (var t in traits)
+            if (t != null && t.traitId == traitId)
+                return true;
+        return false;
+    }
+
+    public void AddTrait(TraitSO trait)
+    {
+        if (trait == null) return;
+        if (!traits.Contains(trait))
+            traits.Add(trait);
+    }
+
+    public void RemoveTrait(TraitSO trait)
+    {
+        if (trait == null) return;
+        if (traits.Contains(trait))
+            traits.Remove(trait);
+    }
+
+    public int GetCarryCapacity()
+    {
+        int cap = baseCarryCapacity;
+        foreach (var t in traits)
+        {
+            if (t == null) continue;
+            cap += t.carryCapacityBonus;
+        }
+        return Mathf.Max(0, cap);
+    }
+
+    public float GetGatherMultiplier()
+    {
+        float mul = baseGatherMultiplier;
+        foreach (var t in traits)
+        {
+            if (t == null) continue;
+            mul *= t.gatherMultiplier;
+        }
+        return mul;
     }
 
     void Update()
@@ -68,7 +167,6 @@ public class PopulationAgent : MonoBehaviour
         currentTile = targetTile;
         if (currentTile != null) currentTile.OnPopulationEnter(this);
         targetTile = null;
-        PopulationManager.Instance.RequestNextMove(this, currentTile);
     }
 
     public void SetTarget(HexTile t)
@@ -96,7 +194,25 @@ public class PopulationAgent : MonoBehaviour
     {
         if (!stayOnTile) return;
         stayOnTile = false;
-        // ask manager to pick a neighbor
-        PopulationManager.Instance.RequestNextMove(this, currentTile);
+    }
+    
+    // Helper: sample an index from a probability chart and map to optional values array safely.
+    // Returns fallbackValue if sampling/mapping cannot produce a valid result.
+    int SampleStatFromChart(float[] chart, int[] valueMap, int fallbackValue)
+    {
+        int idx = RandomUtil.PickIndexFromChart(chart);
+        if (valueMap != null && valueMap.Length > 0)
+        {
+            if (idx < 0) return fallbackValue;
+            if (idx >= valueMap.Length)
+            {
+                // lengths mismatch; clamp to last available value and warn
+                Debug.LogWarning($"PopulationAgent: valueMap length ({valueMap.Length}) smaller than sampled index ({idx}). Clamping to last value.");
+                return valueMap[valueMap.Length - 1];
+            }
+            return valueMap[idx];
+        }
+        // No mapping provided; use the sampled index as the stat (or fallback if negative)
+        return Mathf.Max(fallbackValue, idx);
     }
 }

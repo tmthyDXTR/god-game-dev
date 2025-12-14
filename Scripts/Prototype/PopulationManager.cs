@@ -8,12 +8,13 @@ public class PopulationManager : MonoBehaviour
 
     [Header("Pool Settings")]
     public int initialPool = 20;
+    [Header("Prefab (optional)")]
+    [Tooltip("If provided, this prefab will be instantiated for agents. If null, a simple runtime agent GameObject will be created.")]
+    public GameObject populationAgentPrefab;
 
     Queue<GameObject> pool = new Queue<GameObject>();
 
-    [Header("Movement Weights")]
-    public float faithAttraction = 2f;   // multiplier toward faith
-    public float heresyRepulsion = 1.5f;// multiplier to avoid heresy
+
 
     // shared sprite for runtime agents (small black rectangle)
     Sprite agentSprite;
@@ -25,7 +26,9 @@ public class PopulationManager : MonoBehaviour
         if (Instance == null) Instance = this;
         else Destroy(this);
 
-        CreateAgentSprite();
+        // Only create the shared runtime sprite if we will generate procedural agents
+        if (populationAgentPrefab == null)
+            CreateAgentSprite();
 
         // find grid generator in scene if present
         gridGenerator = FindFirstObjectByType<HexGridGenerator>();
@@ -36,6 +39,7 @@ public class PopulationManager : MonoBehaviour
             go.SetActive(false);
             pool.Enqueue(go);
         }
+        Debug.Log($"PopulationManager: Awake prewarmed pool with {pool.Count} agents. Prefab assigned: {populationAgentPrefab != null}");
     }
 
     void CreateAgentSprite()
@@ -51,12 +55,27 @@ public class PopulationManager : MonoBehaviour
 
     GameObject CreateAgentGO()
     {
-        var go = new GameObject("PopulationAgent");
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = agentSprite;
-        sr.color = Color.black;
-        go.transform.localScale = Vector3.one * 0.04f;
-        go.AddComponent<PopulationAgent>();
+        GameObject go;
+        if (populationAgentPrefab != null)
+        {
+            // instantiate prefab; ensure it has a PopulationAgent component
+            go = Instantiate(populationAgentPrefab);
+            // rename
+            go.name = "worker";
+            if (go.GetComponent<PopulationAgent>() == null)
+                go.AddComponent<PopulationAgent>();
+            Debug.Log($"PopulationManager: Instantiated prefab for agent '{go.name}'");
+        }
+        else
+        {
+            go = new GameObject("PopulationAgent");
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = agentSprite;
+            sr.color = Color.black;
+            go.transform.localScale = Vector3.one * 0.04f;
+            go.AddComponent<PopulationAgent>();
+            Debug.Log($"PopulationManager: Created procedural agent '{go.name}'");
+        }
         go.transform.parent = GameObject.Find("Population")?.transform ?? transform;
         return go;
     }
@@ -65,13 +84,14 @@ public class PopulationManager : MonoBehaviour
     // until `StartAgentMovement` is called for that agent.
     public PopulationAgent SpawnAgent(HexTile tile, bool stayOnTile = true)
     {
+        Debug.Log($"PopulationManager: SpawnAgent requested. Pool before spawn: {pool.Count}");
         GameObject go = pool.Count > 0 ? pool.Dequeue() : CreateAgentGO();
         go.SetActive(true);
+        Debug.Log($"PopulationManager: SpawnAgent dequeued '{go.name}'. Active: {go.activeSelf}");
         var agent = go.GetComponent<PopulationAgent>();
         agent.Initialize(tile, stayOnTile);
         tile.OnPopulationEnter(agent);
-        if (!stayOnTile)
-            RequestNextMove(agent, tile);
+        Debug.Log($"PopulationManager: Spawned agent '{agent.name}' at tile {tile.HexCoordinates}. Pool now: {pool.Count}");
         return agent;
     }
 
@@ -100,60 +120,6 @@ public class PopulationManager : MonoBehaviour
         pool.Enqueue(agent.gameObject);
     }
 
-    // Called by agent after arriving on a tile
-    public void RequestNextMove(PopulationAgent agent, HexTile current)
-    {
-        if (gridGenerator == null)
-        {
-            gridGenerator = FindFirstObjectByType<HexGridGenerator>();
-            if (gridGenerator == null) return;
-        }
-
-        var neighbors = new List<HexTile>();
-        if (current != null)
-        {
-            var center = current.HexCoordinates;
-            for (int dir = 0; dir < 6; dir++)
-            {
-                var nHex = center.Neighbor(dir);
-                if (gridGenerator.tiles.TryGetValue(nHex, out var nTile))
-                    neighbors.Add(nTile);
-            }
-        }
-
-        if (neighbors.Count == 0) return;
-
-        float total = 0f;
-        float[] weights = new float[neighbors.Count];
-        for (int i = 0; i < neighbors.Count; i++)
-        {
-            var t = neighbors[i];
-            if (t == null || !t.isExplored) { weights[i] = 0f; continue; }
-            float w = 1f;
-            // use placeholder fields for faith/heresy (if you add those later to HexTile)
-            int faith = 0;
-            int heresy = 0;
-            // If HexTile gains explicit faith/heresy fields in future, replace these lines
-            w += faith * faithAttraction;
-            w -= heresy * heresyRepulsion;
-            weights[i] = Mathf.Max(0.01f, w);
-            total += weights[i];
-        }
-
-        float r = Random.value * total;
-        float acc = 0f;
-        for (int i = 0; i < neighbors.Count; i++)
-        {
-            acc += weights[i];
-            if (r <= acc)
-            {
-                agent.SetTarget(neighbors[i]);
-                return;
-            }
-        }
-
-        agent.SetTarget(neighbors[0]);
-    }
 
     // Utility: quick population counts for a tile
     public int GetPopulationCount(HexTile tile)

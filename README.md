@@ -1,0 +1,1 @@
+.\Scripts\generate_docs_nav.js generates nav at top of .\docs\ md files

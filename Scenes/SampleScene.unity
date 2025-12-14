@@ -568,7 +568,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Prototype.Cards.DeckTest
   deckManager: {fileID: 405853128}
-  drawCount: 5
+  drawCount: 3
   drawOnStart: 1
 --- !u!114 &405853128
 MonoBehaviour:
@@ -585,16 +585,8 @@ MonoBehaviour:
   initialDeck:
   - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
   - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  - {fileID: 11400000, guid: fdb28303d002e834cb5b5871f6250895, type: 2}
-  shuffleOnStart: 0
+  - {fileID: 11400000, guid: 6a5993dc1e92aa2409b041041c254ba8, type: 2}
+  shuffleOnStart: 1
   debugDeckManager: 1
 --- !u!4 &405853129
 Transform:
@@ -724,10 +716,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI.DebugMenuUI
   godBeast: {fileID: 123324966}
-  inventoryFood: 0
-  inventorySap: 0
   foodIconSprite: {fileID: 1459024109057963326, guid: f1fa55e7a04b2a2448d576159abe68a3, type: 3}
-  sapIconSprite: {fileID: 2534971668043025657, guid: c37dc83d46e1c0e489ae8b9f7aed8080, type: 3}
+  materialIconSprite: {fileID: -8060373524520692123, guid: 1e61531896f39ca48bc42669f2fc6d38, type: 3}
+  faithIconSprite: {fileID: 2534971668043025657, guid: c37dc83d46e1c0e489ae8b9f7aed8080, type: 3}
 --- !u!4 &517761500
 Transform:
   m_ObjectHideFlags: 0
@@ -838,7 +829,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.25, g: 0.25, b: 0.25, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -915,6 +906,70 @@ MonoBehaviour:
   maxZoom: 20
   zoomSmooth: 0
   zoomSmoothTime: 0.08
+--- !u!1 &574459405
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 574459408}
+  - component: {fileID: 574459407}
+  - component: {fileID: 574459406}
+  m_Layer: 0
+  m_Name: ResourceManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &574459406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574459405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7be870e809ab4fa409db5cb00e02a16b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Managers.ResourceTickManager
+  tickInterval: 4
+  autoTick: 0
+  gatherRatePerPerson: 1
+  foodPerPersonPerTick: 0.5
+--- !u!114 &574459407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574459405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaf1c6d55fdae984ea6967ad63e74dcb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Managers.ResourceManager
+  defaultPreset: {fileID: 11400000, guid: 126bc24e015c7b44b898c9d40c748c09, type: 2}
+  applyPresetInEditMode: 0
+  applyPresetOnPlayStart: 1
+--- !u!4 &574459408
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574459405}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &575070032
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,7 +1284,7 @@ MonoBehaviour:
   origin: {x: 0, y: 0}
   tileScale: {x: 0.4, y: 0.4, z: 1}
   mapData: {fileID: 11400000, guid: a6ed55689c4f0ce4689433161a54d7d7, type: 2}
-  fullyExploreOnStart: 0
+  fullyExploreOnStart: 1
 --- !u!4 &1255198199
 Transform:
   m_ObjectHideFlags: 0
@@ -1876,7 +1931,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 100
   m_TargetDisplay: 0
 --- !u!224 &1977006515
 RectTransform:
@@ -1998,3 +2053,4 @@ SceneRoots:
   - {fileID: 385896967}
   - {fileID: 575070034}
   - {fileID: 494583839}
+  - {fileID: 574459408}
