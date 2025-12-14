@@ -21,7 +21,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-14:** `{{COMMIT_SHA}}` - added unit hover popup panel, added traits, traitmanager, startchartSO 
+- **2025-12-14:** [`1116118`](https://github.com/tmthyDXTR/god-game-dev/commit/1116118a9acf0dcaba4fcb592dbff14a0a4dad18) - added unit hover popup panel, added traits, traitmanager, startchartSO 
 
 - **2025-12-13:** [`fdf8519`](https://github.com/tmthyDXTR/god-game-dev/commit/fdf851995c4ffae1c9bf4ebcbd4ddd449a262db1) - tick system, materials resource, camp settlement
   - Debug HUD: refactored to show `Food / Materials / Faith`, display demand and predicted next-tick changes (gather - consumption).
