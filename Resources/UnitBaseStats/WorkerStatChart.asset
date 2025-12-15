@@ -12,9 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92f2fcaae36e2344be5ff1ee0c2a6d6, type: 3}
   m_Name: WorkerStatChart
   m_EditorClassIdentifier: Assembly-CSharp::Prototype.StatChartSO
-  startingTraitsAmountChart: []
-  startingTraitsAmountValues: 
-  healthChart: []
-  healthValues: 
-  strengthChart: []
-  strengthValues: 
+  startingTraitsAmountChart:
+  - 1
+  - 1
+  startingTraitsAmountValues: 0000000001000000
+  healthChart:
+  - 2
+  - 2
+  - 1
+  healthValues: 010000000200000003000000
+  strengthChart:
+  - 1
+  - 3
+  - 1
+  strengthValues: 000000000100000002000000

@@ -13,9 +13,8 @@
 
 TODO:
 
-<!-- 1. agent random start trait -->
-<!-- 2. two different traits
-    - strong
-    - weak -->
-2. agent gather resource: food
-3. 
+- agent follow god if no camp/settlement
+- settlement neighbors
+- select agent
+- give agent job 
+- agent gather resource: food

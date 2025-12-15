@@ -93,26 +93,26 @@ namespace Managers
             if (gridGenerator == null) gridGenerator = FindFirstObjectByType<HexGridGenerator>();
             if (gridGenerator == null || gridGenerator.tiles == null) return;
 
-            // 1) Gather from tiles into global resources
-            int totalGathered = 0;
-            foreach (var tile in gridGenerator.tiles.Values)
-            {
-                if (tile == null) continue;
-                int pop = Mathf.Max(0, tile.populationCount);
-                if (pop <= 0) continue;
-                int avail = tile.GetResourceAmount(Managers.ResourceManager.GameResource.Food);
-                if (avail <= 0) continue;
-                int want = pop * gatherRatePerPerson;
-                int taken = Mathf.Min(avail, want);
-                if (taken > 0)
-                {
-                    tile.RemoveResource(Managers.ResourceManager.GameResource.Food, taken);
-                    ResourceManager.Instance.AddResource(ResourceManager.GameResource.Food, taken);
-                    totalGathered += taken;
-                }
-            }
-            if (totalGathered > 0)
-                Debug.Log($"ResourceTick: Gathered {totalGathered} food this tick.");
+            // // 1) Gather from tiles into global resources
+            // int totalGathered = 0;
+            // foreach (var tile in gridGenerator.tiles.Values)
+            // {
+            //     if (tile == null) continue;
+            //     int pop = Mathf.Max(0, tile.populationCount);
+            //     if (pop <= 0) continue;
+            //     int avail = tile.GetResourceAmount(Managers.ResourceManager.GameResource.Food);
+            //     if (avail <= 0) continue;
+            //     int want = pop * gatherRatePerPerson;
+            //     int taken = Mathf.Min(avail, want);
+            //     if (taken > 0)
+            //     {
+            //         tile.RemoveResource(Managers.ResourceManager.GameResource.Food, taken);
+            //         ResourceManager.Instance.AddResource(ResourceManager.GameResource.Food, taken);
+            //         totalGathered += taken;
+            //     }
+            // }
+            // if (totalGathered > 0)
+            //     Debug.Log($"ResourceTick: Gathered {totalGathered} food this tick.");
 
             // 2) Consumption: global food upkeep
             int totalPopulation = 0;

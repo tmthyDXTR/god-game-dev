@@ -112,6 +112,13 @@ MonoBehaviour:
   strength: 1
   baseCarryCapacity: 1
   baseGatherMultiplier: 1
+  carryCapacity: 0
+  gatherMultiplier: 0
+  currentHunger: 20
+  maxHunger: 100
+  hungerDecayRate: 1
+  foodRestorationAmount: 50
+  agentState: 0
   statChart: {fileID: 11400000, guid: 8113ae7e10115ff469b7bc07634873f2, type: 2}
   idleRadius: 0.65
   idleTargetThreshold: 0.001

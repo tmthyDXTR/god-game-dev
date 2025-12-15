@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Trait_Weak
   m_EditorClassIdentifier: Assembly-CSharp::Prototype.Traits.TraitSO
   traitId: 
-  displayName: Strong
-  description: So stronk
+  displayName: Weak
+  description: So weak
   icon: {fileID: 0}
-  gatherMultiplier: 2
-  carryCapacityBonus: 2
+  gatherMultiplier: 1
+  carryCapacityBonus: -1
   moveSpeedMultiplier: 1

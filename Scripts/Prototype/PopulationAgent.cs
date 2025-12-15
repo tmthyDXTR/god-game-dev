@@ -15,6 +15,12 @@ public class PopulationAgent : MonoBehaviour
         Health,
         Strength,
     }
+
+    public enum AgentState {
+        Idle,
+        SeekingFood,
+        Eating
+    }
     
     [Header("Traits")]
     public List<TraitSO> traits = new List<TraitSO>();
@@ -33,6 +39,22 @@ public class PopulationAgent : MonoBehaviour
     public int baseCarryCapacity = 1;
     [Tooltip("Base gather multiplier used by GetGatherMultiplier before trait modifiers")]
     public float baseGatherMultiplier = 1f;
+    
+    // Cached/computed stats (calculated at Initialize and used by game logic)
+    public int carryCapacity;
+    public float gatherMultiplier;
+
+    [Header("Hunger System")]
+    [Tooltip("Current hunger level (0 = starving, maxHunger = full)")]
+    public float currentHunger = 100f;
+    [Tooltip("Maximum hunger capacity")]
+    public float maxHunger = 100f;
+    [Tooltip("Hunger decay per second (lower = slower hunger)")]
+    public float hungerDecayRate = 1f;
+    [Tooltip("Food restored per eating action")]
+    public float foodRestorationAmount = 30f;
+    [Tooltip("Current behavioral state of the agent")]
+    public AgentState agentState = AgentState.Idle;
 
     [Header("Stat Distributions (probability charts)")]
     [Tooltip("Centralized stat chart ScriptableObject (use this; per-agent arrays removed).")]
@@ -88,6 +110,13 @@ public class PopulationAgent : MonoBehaviour
             var trait = Managers.TraitManager.Instance != null ? Managers.TraitManager.Instance.GetRandomTrait() : null;
             AddTrait(trait);
         }
+
+        // Compute derived stats once at initialization so game logic uses stable values
+        ComputeDerivedStats();
+        
+        // Initialize hunger to max
+        currentHunger = maxHunger;
+        agentState = AgentState.Idle;
     }
 
     // Trait helpers
@@ -116,29 +145,53 @@ public class PopulationAgent : MonoBehaviour
 
     public int GetCarryCapacity()
     {
-        int cap = baseCarryCapacity;
-        foreach (var t in traits)
-        {
-            if (t == null) continue;
-            cap += t.carryCapacityBonus;
-        }
-        return Mathf.Max(0, cap);
+        return Mathf.Max(0, carryCapacity);
     }
 
     public float GetGatherMultiplier()
     {
+        return gatherMultiplier;
+    }
+
+    // Recompute cached derived stats based on base stats and traits.
+    void ComputeDerivedStats()
+    {
+        int cap = baseCarryCapacity;
         float mul = baseGatherMultiplier;
-        foreach (var t in traits)
+        if (traits != null)
         {
-            if (t == null) continue;
-            mul *= t.gatherMultiplier;
+            foreach (var t in traits)
+            {
+                if (t == null) continue;
+                cap += t.carryCapacityBonus;
+                mul *= t.gatherMultiplier;
+            }
         }
-        return mul;
+        carryCapacity = Mathf.Max(0, cap);
+        gatherMultiplier = mul;
     }
 
     void Update()
     {
-        if (stayOnTile && targetTile == null)
+        // Tick hunger down over time
+        currentHunger -= hungerDecayRate * Time.deltaTime;
+        currentHunger = Mathf.Max(0f, currentHunger);
+
+        // Check if starving and not already seeking food
+        if (currentHunger <= 0f && agentState != AgentState.SeekingFood && agentState != AgentState.Eating)
+        {
+            // Find nearest food tile and go there
+            HexTile foodTile = FindNearestFoodTile();
+            if (foodTile != null)
+            {
+                agentState = AgentState.SeekingFood;
+                stayOnTile = false;
+                SetTarget(foodTile);
+                Debug.Log($"{name}: Starving! Seeking food at {foodTile.HexCoordinates}");
+            }
+        }
+
+        if (stayOnTile && targetTile == null && agentState == AgentState.Idle)
         {
             // idle wandering inside current tile
             idleTimer += Time.deltaTime;
@@ -167,6 +220,32 @@ public class PopulationAgent : MonoBehaviour
         currentTile = targetTile;
         if (currentTile != null) currentTile.OnPopulationEnter(this);
         targetTile = null;
+
+        // If we were seeking food and arrived at a tile with food, eat exactly 1 food and return to idle
+        if (agentState == AgentState.SeekingFood && currentTile != null)
+        {
+            // Immediately change state to prevent re-entry
+            agentState = AgentState.Eating;
+            
+            int availableFood = currentTile.GetResourceAmount(Managers.ResourceManager.GameResource.Food);
+            if (availableFood > 0)
+            {
+                // Consume exactly 1 food from tile and restore hunger
+                currentTile.RemoveResource(Managers.ResourceManager.GameResource.Food, 1);
+                currentHunger = Mathf.Min(currentHunger + foodRestorationAmount, maxHunger);
+                Debug.Log($"{name}: Ate 1 food! Hunger restored to {currentHunger:F1}");
+            }
+            else
+            {
+                // No food here anymore
+                Debug.Log($"{name}: No food at destination. Will search again when hungry.");
+            }
+            
+            // Return to idle state and resume local wandering
+            agentState = AgentState.Idle;
+            stayOnTile = true;
+            PickNewLocalTarget();
+        }
     }
 
     public void SetTarget(HexTile t)
@@ -214,5 +293,34 @@ public class PopulationAgent : MonoBehaviour
         }
         // No mapping provided; use the sampled index as the stat (or fallback if negative)
         return Mathf.Max(fallbackValue, idx);
+    }
+
+    // Find nearest tile with food resources
+    HexTile FindNearestFoodTile()
+    {
+        if (currentTile == null) return null;
+
+        var gen = FindFirstObjectByType<HexGridGenerator>();
+        if (gen == null || gen.tiles == null) return null;
+
+        HexTile nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var tile in gen.tiles.Values)
+        {
+            if (tile == null) continue;
+            int food = tile.GetResourceAmount(Managers.ResourceManager.GameResource.Food);
+            if (food > 0)
+            {
+                float dist = Vector3.Distance(transform.position, tile.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nearest = tile;
+                }
+            }
+        }
+
+        return nearest;
     }
 }
