@@ -5,9 +5,9 @@ namespace HexGrid
 {
     public class HexTileSelector : MonoBehaviour
     {
-        public Color hoverColor = new Color(1f, 1f, 0.5f, 0.5f); // light yellow
-        public Color selectColor = new Color(1f, 1f, 0f, 0.7f); // yellow
-        public Color normalColor = Color.white;
+        public Color hoverColor = HighlightConfig.Hover; // light yellow (centralized)
+        public Color selectColor = HighlightConfig.Select; // yellow
+        public Color normalColor = HighlightConfig.Normal;
 
         private HexTile hoveredTile;
         private HexTile selectedTile;

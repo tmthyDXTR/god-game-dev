@@ -15,6 +15,12 @@ namespace Managers
     /// </summary>
     public class ResourceTickManager : MonoBehaviour
     {
+        // Work units granted to agents per tick. Agents consume work units to complete harvesting tasks.
+        [Tooltip("Work units provided to agents per tick. Harvest progress is driven by these units.")]
+        public float workUnitsPerTick = 1f;
+
+        // Simple event fired after tick processing so agents and systems can react deterministically.
+        public event System.Action OnTickEvent;
         [Tooltip("Seconds between ticks")]
         public float tickInterval = 2f;
 
@@ -47,9 +53,9 @@ namespace Managers
             Debug.Log("ResourceTickManager.TriggerTick called");
             // Run OnTick synchronously; safe because it's small and idempotent-ish.
             try {
-                Debug.Log("ResourceTickManager: OnTick start");
+                Debug.Log("ResourceTickManager: Triggering OnTick");
                 OnTick();
-                Debug.Log("ResourceTickManager: OnTick end");
+                try { OnTickEvent?.Invoke(); } catch (System.Exception e) { Debug.LogException(e); }
             } catch (System.Exception e) { Debug.LogException(e); }
         }
 
@@ -83,7 +89,13 @@ namespace Managers
             while (Application.isPlaying)
             {
                 yield return new WaitForSeconds(tickInterval);
-                try { OnTick(); } catch (System.Exception e) { Debug.LogException(e); }
+                // Debug.Log("ResourceTickManager: Auto tick");
+                try
+                {
+                    OnTick();
+                }
+                catch (System.Exception e) { Debug.LogException(e); }
+                try { OnTickEvent?.Invoke(); } catch (System.Exception e) { Debug.LogException(e); }
             }
         }
 
@@ -115,48 +127,48 @@ namespace Managers
             //     Debug.Log($"ResourceTick: Gathered {totalGathered} food this tick.");
 
             // 2) Consumption: global food upkeep
-            int totalPopulation = 0;
-            foreach (var tile in gridGenerator.tiles.Values)
-            {
-                if (tile == null) continue;
-                totalPopulation += Mathf.Max(0, tile.populationCount);
-            }
+            // int totalPopulation = 0;
+            // foreach (var tile in gridGenerator.tiles.Values)
+            // {
+            //     if (tile == null) continue;
+            //     totalPopulation += Mathf.Max(0, tile.populationCount);
+            // }
 
-            if (totalPopulation <= 0) return;
+            // if (totalPopulation <= 0) return;
 
-            float demandF = totalPopulation * foodPerPersonPerTick;
-            int demand = Mathf.CeilToInt(demandF);
-            int removed = ResourceManager.Instance.TryRemoveResource(ResourceManager.GameResource.Food, demand);
-            if (removed >= demand)
-            {
-                // all good
-                return;
-            }
+            // float demandF = totalPopulation * foodPerPersonPerTick;
+            // int demand = Mathf.CeilToInt(demandF);
+            // int removed = ResourceManager.Instance.TryRemoveResource(ResourceManager.GameResource.Food, demand);
+            // if (removed >= demand)
+            // {
+            //     // all good
+            //     return;
+            // }
 
-            int shortage = demand - removed;
-            // approximate number of people that cannot be fed
-            int starvationPeople = Mathf.CeilToInt(shortage / Mathf.Max(foodPerPersonPerTick, 0.0001f));
-            Debug.LogWarning($"ResourceTick: Food shortage {shortage}. Starvation affecting ~{starvationPeople} people.");
+            // int shortage = demand - removed;
+            // // approximate number of people that cannot be fed
+            // int starvationPeople = Mathf.CeilToInt(shortage / Mathf.Max(foodPerPersonPerTick, 0.0001f));
+            // Debug.LogWarning($"ResourceTick: Food shortage {shortage}. Starvation affecting ~{starvationPeople} people.");
 
-            // Despawn agents to represent starvation (prefer any agents currently active)
-            var pm = PopulationManager.Instance ?? FindFirstObjectByType<PopulationManager>();
-            if (pm == null)
-            {
-                Debug.LogWarning("ResourceTick: No PopulationManager found to remove starving agents.");
-                return;
-            }
+            // // Despawn agents to represent starvation (prefer any agents currently active)
+            // var pm = PopulationManager.Instance ?? FindFirstObjectByType<PopulationManager>();
+            // if (pm == null)
+            // {
+            //     Debug.LogWarning("ResourceTick: No PopulationManager found to remove starving agents.");
+            //     return;
+            // }
 
-            var agents = FindObjectsByType<PopulationAgent>(FindObjectsSortMode.None);
-            int removedCount = 0;
-            // remove agents up to starvationPeople
-            foreach (var a in agents)
-            {
-                if (removedCount >= starvationPeople) break;
-                if (a == null) continue;
-                pm.DespawnAgent(a);
-                removedCount++;
-            }
-            Debug.LogWarning($"ResourceTick: Despawned {removedCount} agents due to starvation.");
+            // var agents = FindObjectsByType<PopulationAgent>(FindObjectsSortMode.None);
+            // int removedCount = 0;
+            // // remove agents up to starvationPeople
+            // foreach (var a in agents)
+            // {
+            //     if (removedCount >= starvationPeople) break;
+            //     if (a == null) continue;
+            //     pm.DespawnAgent(a);
+            //     removedCount++;
+            // }
+            // Debug.LogWarning($"ResourceTick: Despawned {removedCount} agents due to starvation.");
         }
 
         void OnDisable()

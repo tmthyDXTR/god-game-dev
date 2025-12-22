@@ -164,8 +164,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c30ee0116c9ce814190e5620c335792c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexGrid.SelectionManager
-  hoverColor: {r: 1, g: 1, b: 0.5, a: 1}
-  selectColor: {r: 1, g: 0.45844096, b: 0, a: 1}
+  hoverColor: {r: 1, g: 1, b: 0.5, a: 0.5}
+  selectColor: {r: 1, g: 0.45844096, b: 0, a: 0.7}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   gridGenerator: {fileID: 1255198198}
   uiLayerMask:

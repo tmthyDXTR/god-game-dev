@@ -47,7 +47,7 @@ namespace Managers
                 return;
             }
             turnCount++;
-            EndTurnConsume();
+            // EndTurnConsume();
             // Spread BoneBloom after resource consumption
             SpreadBoneBloom();
             // If ResourceTickManager is in manual mode, trigger its tick at end of turn
@@ -139,7 +139,7 @@ namespace Managers
 
             // consume the configured resource and amount
             Debug.Log($"TurnManager: consuming {data.perTurnAmount} of {data.perTurnResource?.displayName} from GodBeast (before consumption amount = {godBeast.GetInventoryAmount(data.perTurnResource)})");
-            godBeast.ConsumeResource(data.perTurnResource, data.perTurnAmount);
+            // godBeast.ConsumeResource(data.perTurnResource, data.perTurnAmount);
             int remaining = godBeast.GetInventoryAmount(data.perTurnResource);
             Debug.Log($"TurnManager: after consumption remaining {data.perTurnResource?.displayName} = {remaining}");
             if (debugMenuUI != null)

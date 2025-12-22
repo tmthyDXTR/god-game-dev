@@ -67,6 +67,23 @@ namespace HexGrid
                 UpdateResourceIcons();
             }
         }
+
+        /// <summary>
+        /// Attempt to harvest up to <paramref name="want"/> units of <paramref name="type"/> from this tile.
+        /// Removes the amount actually taken from the tile and returns that amount.
+        /// </summary>
+        public int Harvest(Managers.ResourceManager.GameResource type, int want)
+        {
+            if (want <= 0) return 0;
+            int have = GetResourceAmount(type);
+            int take = Mathf.Min(want, have);
+            if (take > 0)
+            {
+                // Reuse existing removal logic to update icons and amounts
+                RemoveResource(type, take);
+            }
+            return take;
+        }
         public void RemoveAllResources()
         {
             resourceAmounts.Clear();

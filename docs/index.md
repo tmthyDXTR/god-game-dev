@@ -1,10 +1,9 @@
-<!-- Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces -->
-
 <!-- AUTO_NAV_START -->
 <nav>
 <ul style="list-style:none; padding:0; display:flex; gap:1rem;">
   <li><a href="card-brainstorm.html">Card Brainstorm</a></li>
   <li><a href="index.html">Index</a></li>
+  <li><a href="jobs.html">Jobs</a></li>
   <li><a href="localizationSetup.html">LocalizationSetup</a></li>
   <li><a href="population-design.html">Population Design</a></li>
   <li><a href="proto-brainstorm.html">Proto Brainstorm</a></li>
@@ -13,13 +12,23 @@
 </nav>
 <!-- AUTO_NAV_END -->
 
----
+<!-- Auto insert commit sha with hyperlink with `{{COMMIT_SHA} }` without spaces -->
 
 # GOD - Development Changelog 
 
 ---
 
 **Recent Changes (Assets/)**
+
+- **2025-12-22** `{{COMMIT_SHA}}` - job & agent scheduling, tick-driven harvesting
+  - Added a local job system: `HexGrid.Job`/`JobType` (moved into `HexGrid` namespace), per-`Settlement` job queue (`EnqueueJob`, `TryDequeueJob`, `PeekNextJob`).
+  - `HexTile.Harvest(resource, want)` helper implemented (returns amount actually taken).
+  - `PopulationAgent` job flow: `StartJob(Job, Settlement)`, tick-driven harvesting (uses `ResourceTickManager.workUnitsPerTick` via `OnTickEvent`), carries and deposits resources to `Settlement`.
+  - `ResourceTickManager`: added `workUnitsPerTick` and `OnTickEvent` so agents progress harvest deterministically on ticks.
+  - `Settlement`: storage API (`DepositResource`, `OnJobComplete`) and job queue hooks added.
+  - `PopulationManager`: simple scheduler added (`jobScanInterval`) to assign nearest idle agents to queued jobs.
+  - `Prototype/JobTestSpawner` added — inspector/context-menu helpers to spawn gather jobs for testing (Spawn Single / Spawn Wood Gather Jobs).
+  - Misc fixes: `AgentState` typo corrected (`Depositing`), improved job re-enqueue and null-check handling.
 
 - **2025-12-14:** [`1116118`](https://github.com/tmthyDXTR/god-game-dev/commit/1116118a9acf0dcaba4fcb592dbff14a0a4dad18) - added unit hover popup panel, added traits, traitmanager, startchartSO 
 

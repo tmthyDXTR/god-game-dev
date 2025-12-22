@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using HexGrid;
 using Prototype.Traits;
+using System.Linq;
 
 public class PopulationAgent : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class PopulationAgent : MonoBehaviour
     public HexTile currentTile;
     HexTile targetTile;
     bool stayOnTile = false;
+
+
 
     public enum BaseStat {
         startingTraitsAmount,
@@ -19,7 +22,11 @@ public class PopulationAgent : MonoBehaviour
     public enum AgentState {
         Idle,
         SeekingFood,
-        Eating
+        Eating,
+        TravelingToSource,
+        Harvesting,
+        CarryingToSettlement,
+        Depositing
     }
     
     [Header("Traits")]
@@ -44,6 +51,11 @@ public class PopulationAgent : MonoBehaviour
     public int carryCapacity;
     public float gatherMultiplier;
 
+    [Header("Job System")]
+    public Job currentJob = null;
+    public int carriedAmount = 0;
+    public Settlement homeSettlement = null;
+
     [Header("Hunger System")]
     [Tooltip("Current hunger level (0 = starving, maxHunger = full)")]
     public float currentHunger = 100f;
@@ -55,6 +67,14 @@ public class PopulationAgent : MonoBehaviour
     public float foodRestorationAmount = 30f;
     [Tooltip("Current behavioral state of the agent")]
     public AgentState agentState = AgentState.Idle;
+
+    [Header("Harvesting")]
+    [Tooltip("Base work units required to harvest one unit (tick-driven)")]
+    public float baseHarvestWorkUnits = 1f;
+    // runtime remaining work units for the current harvest
+    float harvestWorkRemaining = 0f;
+    // cached tick manager for subscription
+    Managers.ResourceTickManager resourceTickManager;
 
     [Header("Stat Distributions (probability charts)")]
     [Tooltip("Centralized stat chart ScriptableObject (use this; per-agent arrays removed).")]
@@ -117,6 +137,17 @@ public class PopulationAgent : MonoBehaviour
         // Initialize hunger to max
         currentHunger = maxHunger;
         agentState = AgentState.Idle;
+
+        // Subscribe to global tick events for deterministic work progression
+        resourceTickManager = FindFirstObjectByType<Managers.ResourceTickManager>();
+        if (resourceTickManager != null)
+            resourceTickManager.OnTickEvent += HandleTick;
+    }
+
+    void OnDisable()
+    {
+        if (resourceTickManager != null)
+            resourceTickManager.OnTickEvent -= HandleTick;
     }
 
     // Trait helpers
@@ -212,6 +243,8 @@ public class PopulationAgent : MonoBehaviour
         {
             ArriveAtTarget();
         }
+
+        // Harvesting is now driven by global ticks via HandleTick
     }
 
     void ArriveAtTarget()
@@ -245,6 +278,78 @@ public class PopulationAgent : MonoBehaviour
             agentState = AgentState.Idle;
             stayOnTile = true;
             PickNewLocalTarget();
+            return;
+        }
+
+        // If we were assigned a job and traveled to the source, begin harvesting (tick-driven)
+        if (agentState == AgentState.TravelingToSource && currentJob != null && currentJob.originTile == currentTile)
+        {
+            // Set remaining work units for one unit of resource
+            harvestWorkRemaining = baseHarvestWorkUnits;
+            agentState = AgentState.Harvesting;
+            Debug.Log($"{name}: Arrived at source for job {currentJob.id}. Beginning harvest (work={harvestWorkRemaining:F2}).");
+            return;
+        }
+
+        // If we were carrying to settlement and arrived, deposit carried resources
+        if (agentState == AgentState.CarryingToSettlement)
+        {
+            // Determine target settlement tile (prefer homeSettlement, fall back to job target)
+            Settlement targetSettlement = homeSettlement ?? (currentJob != null ? currentJob.targetSettlement : null);
+            HexTile settlementTile = targetSettlement != null ? targetSettlement.GetComponent<HexTile>() : null;
+
+            // If we've arrived at the settlement tile, deposit
+            if (settlementTile != null && currentTile == settlementTile)
+            {
+                int depositAmount = carriedAmount;
+                if (depositAmount > 0)
+                {
+                    if (targetSettlement != null)
+                    {
+                        // Let settlement handle storage and global updates
+                        targetSettlement.OnJobComplete(currentJob, depositAmount);
+                    }
+                    else
+                    {
+                        // No settlement to accept - fallback to global ResourceManager
+                        if (Managers.ResourceManager.Instance != null && currentJob != null)
+                        {
+                            Managers.ResourceManager.Instance.AddResource(currentJob.resource, depositAmount);
+                        }
+                    }
+                }
+
+                // Adjust job remaining amount and either complete or requeue
+                if (currentJob != null)
+                {
+                    currentJob.amount -= depositAmount;
+                    if (currentJob.amount > 0)
+                    {
+                        // Partially fulfilled: release claim and re-enqueue only if not already in queue
+                        currentJob.isClaimed = false;
+                        currentJob.claimedByAgentId = null;
+                        var enqueueTarget = currentJob.targetSettlement ?? targetSettlement;
+                        if (enqueueTarget != null)
+                        {
+                            enqueueTarget.EnqueueJob(currentJob);
+                            Debug.Log($"{name}: Partially completed job {currentJob.id}. Remaining {currentJob.amount} re-enqueued.");
+                        }
+                    }
+                    else
+                    {
+                        // Fully completed - no re-enqueue
+                        Debug.Log($"{name}: Job {currentJob.id} fully completed and closed.");
+                    }
+                }
+
+                // Clear carried goods and job assignment
+                carriedAmount = 0;
+                currentJob = null;
+                agentState = AgentState.Idle;
+                stayOnTile = true;
+                PickNewLocalTarget();
+                return;
+            }
         }
     }
 
@@ -273,6 +378,92 @@ public class PopulationAgent : MonoBehaviour
     {
         if (!stayOnTile) return;
         stayOnTile = false;
+    }
+
+    // Claim and start a job. Returns true if the job was successfully claimed and started.
+    public bool StartJob(Job job, Settlement home)
+    {
+        if (job == null) return false;
+        if (job.isClaimed)
+        {
+            Debug.LogWarning($"{name}: Tried to start job {job.id} but it is already claimed.");
+            return false;
+        }
+
+        // Claim the job
+        job.isClaimed = true;
+        job.claimedByAgentId = name;
+
+        // Assign local fields
+        currentJob = job;
+        homeSettlement = home;
+        carriedAmount = 0;
+
+        // Ensure agent will move to the source
+        stayOnTile = false;
+        if (job.originTile != null)
+            SetTarget(job.originTile);
+
+        agentState = AgentState.TravelingToSource;
+        return true;
+    }
+
+    // Convenience overload for calls that don't provide a home settlement yet
+    public bool StartJob(Job job)
+    {
+        return StartJob(job, null);
+    }
+
+    // Handle global tick events to progress harvesting work.
+    void HandleTick()
+    {
+        if (agentState != AgentState.Harvesting) return;
+        if (resourceTickManager == null) return;
+        if (currentJob == null || currentTile == null)
+        {
+            // Abort harvesting if job or tile is missing
+            if (currentJob != null)
+            {
+                currentJob.isClaimed = false;
+                currentJob.claimedByAgentId = null;
+                currentJob = null;
+            }
+            agentState = AgentState.Idle;
+            stayOnTile = true;
+            PickNewLocalTarget();
+            return;
+        }
+
+        // Subtract work units scaled by gather multiplier
+        float workThisTick = resourceTickManager.workUnitsPerTick * Mathf.Max(0.0001f, gatherMultiplier);
+        harvestWorkRemaining -= workThisTick;
+        // Debug.Log($"{name}: Harvest progress - remaining {harvestWorkRemaining:F2}");
+        if (harvestWorkRemaining <= 0f)
+        {
+            int taken = currentTile.Harvest(currentJob.resource, 1);
+            carriedAmount = taken;
+            Debug.Log($"{name}: Harvest complete for job {currentJob.id}. Took {taken} units.");
+
+            // Switch to carrying state and head to home settlement if we have any
+            agentState = AgentState.CarryingToSettlement;
+            if (homeSettlement != null)
+            {
+                var homeTile = homeSettlement.GetComponent<HexTile>();
+                if (homeTile != null) SetTarget(homeTile);
+            }
+            else
+            {
+                // No home provided: become idle or implement fallback
+                Debug.LogWarning($"{name}: No home settlement assigned for job {currentJob.id}. Dropping job.");
+                // release claim and reset
+                currentJob.isClaimed = false;
+                currentJob.claimedByAgentId = null;
+                currentJob = null;
+                agentState = AgentState.Idle;
+                stayOnTile = true;
+                PickNewLocalTarget();
+            }
+        }
     }
     
     // Helper: sample an index from a probability chart and map to optional values array safely.

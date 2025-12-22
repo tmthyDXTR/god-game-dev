@@ -14,6 +14,11 @@ public class PopulationManager : MonoBehaviour
 
     Queue<GameObject> pool = new Queue<GameObject>();
 
+    [Header("Job Scheduler")]
+    [Tooltip("Seconds between job assignment scans")]
+    public float jobScanInterval = 1f;
+    float jobScanTimer = 0f;
+
 
 
     // shared sprite for runtime agents (small black rectangle)
@@ -93,6 +98,74 @@ public class PopulationManager : MonoBehaviour
         tile.OnPopulationEnter(agent);
         Debug.Log($"PopulationManager: Spawned agent '{agent.name}' at tile {tile.HexCoordinates}. Pool now: {pool.Count}");
         return agent;
+    }
+
+    void Update()
+    {
+        // Job scheduler runs periodically to assign queued jobs to nearest idle agents
+        jobScanTimer += Time.deltaTime;
+        if (jobScanTimer >= jobScanInterval)
+        {
+            jobScanTimer = 0f;
+            RunJobScheduler();
+        }
+    }
+
+    void RunJobScheduler()
+    {
+        // Find all settlements with queued jobs
+        var settlements = FindObjectsOfType<Settlement>();
+        if (settlements == null || settlements.Length == 0) return;
+
+        // Cache all agents for assignment lookup
+        var agents = FindObjectsOfType<PopulationAgent>();
+        if (agents == null || agents.Length == 0) return;
+
+        foreach (var s in settlements)
+        {
+            if (s == null) continue;
+            // Try to assign as many jobs as possible down the queue until no idle agents remain
+            bool progress = true;
+            while (progress && s.QueuedJobCount > 0)
+            {
+                progress = false;
+                // find nearest idle agent to this settlement
+                PopulationAgent nearest = null;
+                float bestDist = float.MaxValue;
+                foreach (var a in agents)
+                {
+                    if (a == null) continue;
+                    if (a.agentState != PopulationAgent.AgentState.Idle) continue;
+                    if (a.currentTile == null) continue;
+                    float dist = Vector3.Distance(a.currentTile.transform.position, s.transform.position);
+                    if (dist < bestDist)
+                    {
+                        bestDist = dist;
+                        nearest = a;
+                    }
+                }
+
+                if (nearest == null) break; // no idle agents available for this settlement
+
+                // Dequeue a job and attempt to assign
+                if (s.TryDequeueJob(out Job job))
+                {
+                    if (job == null) continue;
+                    bool started = nearest.StartJob(job, s);
+                    if (!started)
+                    {
+                        // failed to claim/start job - re-enqueue and stop trying for now
+                        s.EnqueueJob(job);
+                        break;
+                    }
+                    else
+                    {
+                        progress = true; // we assigned a job; attempt next in queue
+                        Debug.Log($"PopulationManager: Assigned job {job.id} to agent {nearest.name}");
+                    }
+                }
+            }
+        }
     }
 
     // Start movement for an agent that was spawned idle.

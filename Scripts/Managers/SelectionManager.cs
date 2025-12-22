@@ -10,9 +10,9 @@ namespace HexGrid
         public static SelectionManager Instance { get; private set; }
 
         [Header("Selection Colors")]
-        public Color hoverColor = new Color(1f, 1f, 0.5f, 0.5f);
-        public Color selectColor = new Color(1f, 1f, 0f, 0.7f);
-        public Color normalColor = Color.white;
+        public Color hoverColor = HighlightConfig.Hover;
+        public Color selectColor = HighlightConfig.Select;
+        public Color normalColor = HighlightConfig.Normal;
 
         [SerializeField]
         public HexTile SelectedTile { get; private set; }
@@ -40,7 +40,9 @@ namespace HexGrid
         private Dictionary<HexTile, Dictionary<string, Color>> tileHighlightOwners = new Dictionary<HexTile, Dictionary<string, Color>>();
 
         // Owner priority (higher in list = higher priority)
-        private readonly List<string> highlightPriority = new List<string> { "Selection", "CardTarget", "Range", "Hover" };
+        // Move "Hover" above "Range" so hover color can take precedence when desired.
+        private readonly List<string> highlightPriority = new List<string> { "Selection", "CardTarget", "Hover", "Range" };
+
 
         private void Awake()
         {
@@ -125,18 +127,19 @@ namespace HexGrid
             // If pointer is over UI, clear any hover highlight and skip hover logic
             if (IsPointerOverUI)
             {
-                if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
-                    SetTileHighlight(hoveredTile, null, "Hover");
+                    if (hoveredTile != null && hoveredTile != SelectedTile)
+                        SetTileHighlight(hoveredTile, null, "Hover"); // Clear hover highlight
                 hoveredTile = null;
                 return;
             }
 
             HexTile tile = RaycastTile();
-            // Only override color if not in tilesInRange
-            if (hoveredTile != null && hoveredTile != SelectedTile && !tilesInRange.Contains(hoveredTile))
-                SetTileHighlight(hoveredTile, null, "Hover");
-            if (tile != null && tile != SelectedTile && !tilesInRange.Contains(tile))
-                SetTileHighlight(tile, hoverColor, "Hover");
+                // Clear previous hover owner regardless of range (we only remove the "Hover" owner)
+                if (hoveredTile != null && hoveredTile != SelectedTile)
+                    SetTileHighlight(hoveredTile, null, "Hover");
+                // Apply hover owner even for tiles in tilesInRange; visual precedence determined by highlightPriority
+                if (tile != null && tile != SelectedTile)
+                    SetTileHighlight(tile, hoverColor, "Hover");
             hoveredTile = tile;
         }
 
