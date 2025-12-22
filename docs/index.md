@@ -20,7 +20,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-22** `{{COMMIT_SHA}}` - job & agent scheduling, tick-driven harvesting
+- **2025-12-22** [`d52c23f`](https://github.com/tmthyDXTR/god-game-dev/commit/d52c23fd0c3f4c35a41973198d278256675a10ee) - job & agent scheduling, tick-driven harvesting
   - Added a local job system: `HexGrid.Job`/`JobType` (moved into `HexGrid` namespace), per-`Settlement` job queue (`EnqueueJob`, `TryDequeueJob`, `PeekNextJob`).
   - `HexTile.Harvest(resource, want)` helper implemented (returns amount actually taken).
   - `PopulationAgent` job flow: `StartJob(Job, Settlement)`, tick-driven harvesting (uses `ResourceTickManager.workUnitsPerTick` via `OnTickEvent`), carries and deposits resources to `Settlement`.
