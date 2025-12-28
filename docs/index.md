@@ -20,7 +20,7 @@
 
 **Recent Changes (Assets/)**
 
-- **2025-12-28** `{{COMMIT_SHA}}` - a* path finding implementation (godbeastcontroller.cs)
+- **2025-12-28** [`8ed169a`](https://github.com/tmthyDXTR/god-game-dev/commit/8ed169ad2ada964bfb787b1863aa63a9ee833859) - a* path finding implementation (godbeastcontroller.cs)
   - settlement visuals: individual resources
   - agents haul dropped resources to settlement/storage
   - resource reservation system to not send multiple agents to same resource
