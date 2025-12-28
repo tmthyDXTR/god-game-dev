@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 24a33dce1a9353a4ba9178d021206f0a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - storedLogSprite: {fileID: -8060373524520692123, guid: 1e61531896f39ca48bc42669f2fc6d38, type: 3}
+  - storedFoodSprite: {fileID: 1459024109057963326, guid: f1fa55e7a04b2a2448d576159abe68a3, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -6,12 +6,8 @@ using HexGrid;
 namespace Managers
 {
     /// <summary>
-    /// Drives simple per-tick resource production and consumption.
-    /// - Gathers Food from tiles proportional to tile.populationCount.
-    /// - Deposits gathered food into ResourceManager.
-    /// - Consumes global Food for population upkeep and triggers starvation (despawn agents) on shortfall.
-    ///
-    /// This is intentionally simple for an MVP; later agent-job systems can replace the gather logic.
+    /// Handles resource-specific tick logic (gathering, consumption, etc.).
+    /// Subscribes to GlobalTickManager for tick events instead of running its own loop.
     /// </summary>
     public class ResourceTickManager : MonoBehaviour
     {
@@ -21,11 +17,6 @@ namespace Managers
 
         // Simple event fired after tick processing so agents and systems can react deterministically.
         public event System.Action OnTickEvent;
-        [Tooltip("Seconds between ticks")]
-        public float tickInterval = 2f;
-
-        [Tooltip("If true, ResourceTickManager will run automatically on a timer. If false, ticks must be triggered manually (e.g., by End Turn).")]
-        public bool autoTick = true;
 
         [Tooltip("Food gathered per person per tick from their tile")]
         public int gatherRatePerPerson = 1;
@@ -33,70 +24,59 @@ namespace Managers
         [Tooltip("Food consumed per person per tick (can be fractional; will be rounded up for integer storage)")]
         public float foodPerPersonPerTick = 0.5f;
 
-        HexGridGenerator gridGenerator;
+        /// <summary>
+        /// Convenience property to get tick interval from GlobalTickManager.
+        /// </summary>
+        public float tickInterval => GlobalTickManager.Instance != null ? GlobalTickManager.Instance.tickInterval : 2f;
 
-        private Coroutine loop;
+        HexGridGenerator gridGenerator;
 
         void Start()
         {
             if (!Application.isPlaying) return;
             gridGenerator = FindFirstObjectByType<HexGridGenerator>();
-            if (autoTick)
-                loop = StartCoroutine(TickLoop());
+            
+            // Subscribe to GlobalTickManager
+            if (GlobalTickManager.Instance != null)
+            {
+                GlobalTickManager.Instance.OnTick += HandleGlobalTick;
+            }
+            else
+            {
+                Debug.LogWarning("ResourceTickManager: GlobalTickManager not found! Ticks will not fire.");
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (GlobalTickManager.Instance != null)
+            {
+                GlobalTickManager.Instance.OnTick -= HandleGlobalTick;
+            }
+        }
+
+        void HandleGlobalTick()
+        {
+            try
+            {
+                OnTick();
+            }
+            catch (System.Exception e) { Debug.LogException(e); }
+            
+            try
+            {
+                OnTickEvent?.Invoke();
+            }
+            catch (System.Exception e) { Debug.LogException(e); }
         }
 
         /// <summary>
-        /// Trigger a single tick immediately (can be called from TurnManager.EndTurn or UI).
+        /// Trigger resource tick logic manually (still fires OnTickEvent for agents).
         /// </summary>
         public void TriggerTick()
         {
             Debug.Log("ResourceTickManager.TriggerTick called");
-            // Run OnTick synchronously; safe because it's small and idempotent-ish.
-            try {
-                Debug.Log("ResourceTickManager: Triggering OnTick");
-                OnTick();
-                try { OnTickEvent?.Invoke(); } catch (System.Exception e) { Debug.LogException(e); }
-            } catch (System.Exception e) { Debug.LogException(e); }
-        }
-
-        /// <summary>
-        /// Enable automatic ticking (starts coroutine if not running).
-        /// </summary>
-        public void EnableAutoTick()
-        {
-            if (loop == null && Application.isPlaying)
-            {
-                loop = StartCoroutine(TickLoop());
-            }
-            autoTick = true;
-        }
-
-        /// <summary>
-        /// Disable automatic ticking (stops coroutine if running).
-        /// </summary>
-        public void DisableAutoTick()
-        {
-            if (loop != null)
-            {
-                StopCoroutine(loop);
-                loop = null;
-            }
-            autoTick = false;
-        }
-
-        IEnumerator TickLoop()
-        {
-            while (Application.isPlaying)
-            {
-                yield return new WaitForSeconds(tickInterval);
-                // Debug.Log("ResourceTickManager: Auto tick");
-                try
-                {
-                    OnTick();
-                }
-                catch (System.Exception e) { Debug.LogException(e); }
-                try { OnTickEvent?.Invoke(); } catch (System.Exception e) { Debug.LogException(e); }
-            }
+            HandleGlobalTick();
         }
 
         void OnTick()
@@ -173,7 +153,10 @@ namespace Managers
 
         void OnDisable()
         {
-            if (loop != null) StopCoroutine(loop);
+            if (GlobalTickManager.Instance != null)
+            {
+                GlobalTickManager.Instance.OnTick -= HandleGlobalTick;
+            }
         }
     }
 }

@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f43240afe7ffb7645bf73cf5f5731cd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PopulationTestSpawner
-  spawnCount: 5
+  spawnCount: 2
 --- !u!4 &138670813
 Transform:
   m_ObjectHideFlags: 0
@@ -1075,6 +1075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7be870e809ab4fa409db5cb00e02a16b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Managers.ResourceTickManager
+  workUnitsPerTick: 1
   tickInterval: 5
   autoTick: 1
   gatherRatePerPerson: 1
@@ -1269,6 +1270,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PopulationManager
   initialPool: 20
   populationAgentPrefab: {fileID: 8291595483385716028, guid: b4c635ca214d6b44b8855d247b22b5a8, type: 3}
+  jobScanInterval: 1
 --- !u!4 &1109070495
 Transform:
   m_ObjectHideFlags: 0
@@ -1651,6 +1653,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1303994792}
   m_CullTransparentMesh: 1
+--- !u!1 &1319138671
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1319138673}
+  - component: {fileID: 1319138672}
+  m_Layer: 0
+  m_Name: JobTestSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1319138672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319138671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef1759ed589138d4cb6e06d525578efe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JobTestSpawner
+  testResource: 1
+  testAmount: 3
+  testJobType: 0
+  targetSettlement: {fileID: 0}
+--- !u!4 &1319138673
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319138671}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1352048641
 GameObject:
   m_ObjectHideFlags: 0
@@ -2451,3 +2501,4 @@ SceneRoots:
   - {fileID: 494583839}
   - {fileID: 574459408}
   - {fileID: 1779549325}
+  - {fileID: 1319138673}

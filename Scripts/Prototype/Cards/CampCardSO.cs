@@ -8,11 +8,12 @@ namespace Prototype.Cards
     {
         [Header("Camp")]
         [Tooltip("If true, will refuse to place if tile already has a settlement")] public bool requireEmptyTile = true;
+        [Tooltip("Camp sprite to display on the tile")] public Sprite campSprite;
         [Header("Placement")]
         [Tooltip("Allowed tile types for camp placement. Empty = any type allowed.")] public HexTileType[] allowedTileTypes;
         [Tooltip("Require at least this many population on the tile to place (0 = no requirement)")] public int requireMinPopulation = 1;
         [Tooltip("Local Z offset for camp visual")] public float visualZ = -0.2f;
-        [Tooltip("Triangle size for the camp marker")] public float triangleSize = 0.30f;
+        [Tooltip("Scale multiplier for the camp sprite")] public float spriteScale = 1f;
 
         public override void PlayOverworld(object target)
         {
@@ -64,8 +65,8 @@ namespace Prototype.Cards
                 settlement.isMobile = true;
             }
 
-            // spawn a simple triangular visual under the tile
-            CreateCampVisual(tile.transform, visualZ, triangleSize);
+            // spawn a simple sprite visual under the tile
+            CreateCampVisual(tile.transform, visualZ, spriteScale);
             Debug.Log($"CampCard '{cardName}' placed camp on tile {tile.HexCoordinates}");
         }
 
@@ -102,7 +103,7 @@ namespace Prototype.Cards
             return true;
         }
 
-        private void CreateCampVisual(Transform parent, float zOffset, float size)
+        private void CreateCampVisual(Transform parent, float zOffset, float scale)
         {
             // Avoid creating multiple visuals by name
             var existing = parent.Find("CampVisual");
@@ -111,29 +112,12 @@ namespace Prototype.Cards
             var camp = new GameObject("CampVisual");
             camp.transform.SetParent(parent, worldPositionStays: false);
             camp.transform.localPosition = new Vector3(0f, 0f, zOffset);
+            camp.transform.localScale = Vector3.one * scale;
 
-            var mf = camp.AddComponent<MeshFilter>();
-            var mr = camp.AddComponent<MeshRenderer>();
-
-            Mesh mesh = new Mesh();
-            float h = size;
-            float w = size;
-            mesh.vertices = new Vector3[] {
-                new Vector3(0f, h, 0f),
-                new Vector3(w, -h, 0f),
-                new Vector3(-w, -h, 0f)
-            };
-            mesh.triangles = new int[] { 0, 1, 2 };
-            mesh.RecalculateNormals();
-            mf.mesh = mesh;
-
-            var shader = Shader.Find("Sprites/Default");
-            Material mat = null;
-            if (shader != null)
-                mat = new Material(shader) { color = Color.red };
-            else
-                mat = new Material(Shader.Find("Standard")) { color = Color.red };
-            mr.material = mat;
+            var sr = camp.AddComponent<SpriteRenderer>();
+            sr.sprite = campSprite;
+            // Set sorting order to be above tiles (100) but below trees (1000+)
+            sr.sortingOrder = 500;
         }
     }
 }

@@ -225,11 +225,11 @@ namespace UI
 
             tickToggleBtn.onClick.AddListener(() =>
             {
-                var rt = FindFirstObjectByType<Managers.ResourceTickManager>();
-                if (rt == null) return;
-                if (rt.autoTick) rt.DisableAutoTick(); else rt.EnableAutoTick();
+                var gtm = Managers.GlobalTickManager.Instance;
+                if (gtm == null) return;
+                if (gtm.autoTick) gtm.DisableAutoTick(); else gtm.EnableAutoTick();
                 // update label
-                tickToggleText.text = rt.autoTick ? "Auto Tick: Seconds" : "Auto Tick: EndTurn";
+                tickToggleText.text = gtm.autoTick ? "Auto Tick: Seconds" : "Auto Tick: EndTurn";
             });
 
             // Manual Tick Now button
@@ -270,10 +270,10 @@ namespace UI
                 }
             });
 
-            // initialize toggle label based on existing ResourceTickManager
-            var existingRt = FindFirstObjectByType<Managers.ResourceTickManager>();
-            if (existingRt != null)
-                tickToggleText.text = existingRt.autoTick ? "Auto Tick: Seconds" : "Auto Tick: EndTurn";
+            // initialize toggle label based on existing GlobalTickManager
+            var existingGtm = Managers.GlobalTickManager.Instance;
+            if (existingGtm != null)
+                tickToggleText.text = existingGtm.autoTick ? "Auto Tick: Seconds" : "Auto Tick: EndTurn";
             else
                 tickToggleText.text = "Auto Tick: ?";
 

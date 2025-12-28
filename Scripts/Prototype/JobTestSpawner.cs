@@ -96,17 +96,8 @@ public class JobTestSpawner : MonoBehaviour
             return;
         }
 
-        // Find a tile with the desired resource
-        HexTile targetTile = null;
-        foreach (var tile in gen.tiles.Values)
-        {
-            if (tile == null) continue;
-            if (tile.GetResourceAmount(testResource) > 0)
-            {
-                targetTile = tile;
-                break;
-            }
-        }
+        // Find a tile with the desired resource (nearest to settlement)
+        HexTile targetTile = FindNearestTileWithResource(settlement, testResource);
 
         if (targetTile == null)
         {
@@ -141,5 +132,37 @@ public class JobTestSpawner : MonoBehaviour
 
         Debug.Log($"Settlement '{settlement.name}' has {settlement.QueuedJobCount} jobs queued.");
         Debug.Log($"Stored resources: {string.Join(", ", settlement.storedResources)}");
+    }
+
+    /// <summary>
+    /// Find the nearest tile to the settlement that has the specified resource.
+    /// </summary>
+    HexTile FindNearestTileWithResource(Settlement settlement, Managers.ResourceManager.GameResource resource)
+    {
+        if (settlement == null) return null;
+        
+        var gen = FindFirstObjectByType<HexGridGenerator>();
+        if (gen == null || gen.tiles == null) return null;
+
+        Vector3 settlementPos = settlement.transform.position;
+        HexTile nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var tile in gen.tiles.Values)
+        {
+            if (tile == null) continue;
+            int amount = tile.GetResourceAmount(resource);
+            if (amount > 0)
+            {
+                float dist = Vector3.Distance(settlementPos, tile.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nearest = tile;
+                }
+            }
+        }
+
+        return nearest;
     }
 }

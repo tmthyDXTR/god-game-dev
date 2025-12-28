@@ -50,12 +50,12 @@ namespace Managers
             // EndTurnConsume();
             // Spread BoneBloom after resource consumption
             SpreadBoneBloom();
-            // If ResourceTickManager is in manual mode, trigger its tick at end of turn
-            var rt = FindFirstObjectByType<Managers.ResourceTickManager>();
-            if (rt != null && !rt.autoTick)
+            // If GlobalTickManager is in manual mode, trigger its tick at end of turn
+            var gtm = Managers.GlobalTickManager.Instance;
+            if (gtm != null && !gtm.autoTick)
             {
-                Debug.Log("TurnManager: triggering manual ResourceTick");
-                rt.TriggerTick();
+                Debug.Log("TurnManager: triggering manual GlobalTick");
+                gtm.TriggerTick();
                 Debug.Log("TurnManager: manual ResourceTick complete");
                 // Optionally update debug UI
                 if (debugMenuUI != null)

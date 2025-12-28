@@ -130,13 +130,13 @@ namespace HexGrid
 
         public void AddFoodResourcesToForestTiles()
         {
-            float[] foodProbabilities = { 0.0f, 0.5f, 0.2f, 0.1f };
+            float[] foodProbabilities = { 0.0f, 0.5f, 0.2f, 0.1f, 0.1f, 0.1f };
             AddResourceToTiles(Managers.ResourceManager.GameResource.Food, HexTileType.Forest, foodProbabilities);
         }
 
         public void AddMaterialsResourcesToForestTiles()
         {
-            float[] materialsProbabilities = { 0.0f, 0.4f, 0.5f, 0.1f };
+            float[] materialsProbabilities = { 0.0f, 0.4f, 0.5f, 0.1f, 0.1f, 0.1f };
             AddResourceToTiles(Managers.ResourceManager.GameResource.Materials, HexTileType.Forest, materialsProbabilities);
         }
 

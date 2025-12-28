@@ -20,6 +20,11 @@
 
 **Recent Changes (Assets/)**
 
+- **2025-12-28** `{{COMMIT_SHA}}` - a* path finding implementation (godbeastcontroller.cs)
+  - settlement visuals: individual resources
+  - agents haul dropped resources to settlement/storage
+  - resource reservation system to not send multiple agents to same resource
+
 - **2025-12-22** [`d52c23f`](https://github.com/tmthyDXTR/god-game-dev/commit/d52c23fd0c3f4c35a41973198d278256675a10ee) - job & agent scheduling, tick-driven harvesting
   - Added a local job system: `HexGrid.Job`/`JobType` (moved into `HexGrid` namespace), per-`Settlement` job queue (`EnqueueJob`, `TryDequeueJob`, `PeekNextJob`).
   - `HexTile.Harvest(resource, want)` helper implemented (returns amount actually taken).

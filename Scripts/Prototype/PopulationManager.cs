@@ -121,6 +121,9 @@ public class PopulationManager : MonoBehaviour
         var agents = FindObjectsOfType<PopulationAgent>();
         if (agents == null || agents.Length == 0) return;
 
+        // First, auto-create Haul jobs for any dropped resources if there are designated haulers
+        AutoCreateHaulJobs(settlements);
+
         foreach (var s in settlements)
         {
             if (s == null) continue;
@@ -129,7 +132,12 @@ public class PopulationManager : MonoBehaviour
             while (progress && s.QueuedJobCount > 0)
             {
                 progress = false;
-                // find nearest idle agent to this settlement
+                
+                // Peek the next job to find a suitable agent
+                var nextJob = s.PeekNextJob();
+                if (nextJob == null) break;
+                
+                // Find nearest idle agent that can take this job type
                 PopulationAgent nearest = null;
                 float bestDist = float.MaxValue;
                 foreach (var a in agents)
@@ -137,6 +145,11 @@ public class PopulationManager : MonoBehaviour
                     if (a == null) continue;
                     if (a.agentState != PopulationAgent.AgentState.Idle) continue;
                     if (a.currentTile == null) continue;
+                    
+                    // Check if agent is assigned to this job type
+                    if (a.assignedJobType != nextJob.type)
+                        continue; // Agent assigned to different job type
+                    
                     float dist = Vector3.Distance(a.currentTile.transform.position, s.transform.position);
                     if (dist < bestDist)
                     {
@@ -145,7 +158,7 @@ public class PopulationManager : MonoBehaviour
                     }
                 }
 
-                if (nearest == null) break; // no idle agents available for this settlement
+                if (nearest == null) break; // no compatible idle agents available for this job
 
                 // Dequeue a job and attempt to assign
                 if (s.TryDequeueJob(out Job job))
@@ -161,8 +174,75 @@ public class PopulationManager : MonoBehaviour
                     else
                     {
                         progress = true; // we assigned a job; attempt next in queue
-                        Debug.Log($"PopulationManager: Assigned job {job.id} to agent {nearest.name}");
+                        Debug.Log($"PopulationManager: Assigned job {job.id} ({job.type}) to agent {nearest.name}");
                     }
+                }
+            }
+        }
+    }
+
+    // Auto-create Haul jobs for dropped resources if there are haulers available
+    void AutoCreateHaulJobs(Settlement[] settlements)
+    {
+        if (gridGenerator == null || gridGenerator.tiles == null) return;
+        
+        // Check if there are any designated haulers
+        bool hasHaulers = false;
+        var agents = FindObjectsOfType<PopulationAgent>();
+        foreach (var a in agents)
+        {
+            if (a != null && a.assignedJobType == HexGrid.JobType.Haul)
+            {
+                hasHaulers = true;
+                break;
+            }
+        }
+        
+        if (!hasHaulers) return; // No haulers, gatherers will pick up themselves
+        
+        // Find first settlement to queue haul jobs
+        Settlement targetSettlement = null;
+        foreach (var s in settlements)
+        {
+            if (s != null) { targetSettlement = s; break; }
+        }
+        if (targetSettlement == null) return;
+        
+        // Check all tiles for dropped resources
+        foreach (var tile in gridGenerator.tiles.Values)
+        {
+            if (tile == null) continue;
+            
+            // Check for dropped materials
+            int droppedMaterials = tile.GetDroppedAmount(Managers.ResourceManager.GameResource.Materials);
+            if (droppedMaterials > 0)
+            {
+                // Check if there's already a haul job for this tile
+                bool hasExistingJob = false;
+                foreach (var a in agents)
+                {
+                    if (a != null && a.currentJob != null && 
+                        a.currentJob.type == HexGrid.JobType.Haul && 
+                        a.currentJob.originTile == tile)
+                    {
+                        hasExistingJob = true;
+                        break;
+                    }
+                }
+                
+                if (!hasExistingJob)
+                {
+                    // Create a haul job for the dropped resource
+                    var haulJob = new HexGrid.Job
+                    {
+                        type = HexGrid.JobType.Haul,
+                        resource = Managers.ResourceManager.GameResource.Materials,
+                        amount = 1,
+                        originTile = tile,
+                        priority = 1 // Higher priority than gather
+                    };
+                    targetSettlement.EnqueueJob(haulJob);
+                    Debug.Log($"PopulationManager: Auto-created Haul job for dropped Materials at {tile.HexCoordinates}");
                 }
             }
         }

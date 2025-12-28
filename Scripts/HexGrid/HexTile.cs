@@ -28,13 +28,23 @@ namespace HexGrid
         [Header("Resource Icons")]
         public Sprite foodIcon;
         public Sprite materialsIcon;
+        [Tooltip("Sprite for dropped logs on the ground")]
+        public Sprite logIcon;
         private List<GameObject> foodIcons = new List<GameObject>();
         private List<GameObject> materialsIcons = new List<GameObject>();
+        private List<GameObject> droppedIcons = new List<GameObject>();
         // Overlay object used to show infestation using the bone sprite scaled by level
         private GameObject infestationOverlay = null;
 
         // Resource amounts for each type (use global GameResource enum)
         public System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int> resourceAmounts = new System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int>();
+        
+        // Dropped resources waiting to be picked up (harvested but not yet carried)
+        public System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int> droppedResources = new System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int>();
+
+        // Reserved resources (claimed by agents heading to this tile)
+        public System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int> reservedResources = new System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int>();
+        public System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int> reservedDropped = new System.Collections.Generic.Dictionary<Managers.ResourceManager.GameResource, int>();
 
         // Infestation level for BoneBloom: 0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (becomes Bone tile)
         [Tooltip("0 = clean, 1 = sporeling, 2 = thicket, 3 = graveyard (converts to Bone)")]
@@ -84,9 +94,162 @@ namespace HexGrid
             }
             return take;
         }
+
+        // ========== Dropped Resources (items on the ground waiting to be picked up) ==========
+        
+        /// <summary>
+        /// Drop a resource on this tile (e.g., logs after harvesting a tree).
+        /// </summary>
+        public void DropResource(Managers.ResourceManager.GameResource type, int amount)
+        {
+            if (amount <= 0) return;
+            if (droppedResources.ContainsKey(type))
+                droppedResources[type] += amount;
+            else
+                droppedResources[type] = amount;
+            UpdateResourceIcons();
+        }
+
+        /// <summary>
+        /// Get how many dropped resources of a type are on this tile.
+        /// </summary>
+        public int GetDroppedAmount(Managers.ResourceManager.GameResource type)
+        {
+            if (droppedResources.TryGetValue(type, out int value))
+                return value;
+            return 0;
+        }
+
+        // ========== Resource Reservations ==========
+        
+        /// <summary>
+        /// Get how many resources are reserved (claimed by agents heading here).
+        /// </summary>
+        public int GetReservedAmount(Managers.ResourceManager.GameResource type)
+        {
+            if (reservedResources.TryGetValue(type, out int value))
+                return value;
+            return 0;
+        }
+
+        /// <summary>
+        /// Get how many dropped resources are reserved.
+        /// </summary>
+        public int GetReservedDroppedAmount(Managers.ResourceManager.GameResource type)
+        {
+            if (reservedDropped.TryGetValue(type, out int value))
+                return value;
+            return 0;
+        }
+
+        /// <summary>
+        /// Get available (unreserved) resource amount.
+        /// </summary>
+        public int GetAvailableResourceAmount(Managers.ResourceManager.GameResource type)
+        {
+            return Mathf.Max(0, GetResourceAmount(type) - GetReservedAmount(type));
+        }
+
+        /// <summary>
+        /// Get available (unreserved) dropped resource amount.
+        /// </summary>
+        public int GetAvailableDroppedAmount(Managers.ResourceManager.GameResource type)
+        {
+            return Mathf.Max(0, GetDroppedAmount(type) - GetReservedDroppedAmount(type));
+        }
+
+        /// <summary>
+        /// Reserve resources for an agent heading to this tile. Returns true if reservation succeeded.
+        /// </summary>
+        public bool ReserveResource(Managers.ResourceManager.GameResource type, int amount)
+        {
+            if (amount <= 0) return false;
+            int available = GetAvailableResourceAmount(type);
+            if (available < amount) return false;
+
+            if (reservedResources.ContainsKey(type))
+                reservedResources[type] += amount;
+            else
+                reservedResources[type] = amount;
+            return true;
+        }
+
+        /// <summary>
+        /// Release a reservation (when job completes, cancels, or agent dies).
+        /// </summary>
+        public void ReleaseReservation(Managers.ResourceManager.GameResource type, int amount)
+        {
+            if (amount <= 0) return;
+            if (reservedResources.ContainsKey(type))
+            {
+                reservedResources[type] -= amount;
+                if (reservedResources[type] <= 0)
+                    reservedResources.Remove(type);
+            }
+        }
+
+        /// <summary>
+        /// Reserve dropped resources for an agent heading to pick them up.
+        /// </summary>
+        public bool ReserveDroppedResource(Managers.ResourceManager.GameResource type, int amount)
+        {
+            if (amount <= 0) return false;
+            int available = GetAvailableDroppedAmount(type);
+            if (available < amount) return false;
+
+            if (reservedDropped.ContainsKey(type))
+                reservedDropped[type] += amount;
+            else
+                reservedDropped[type] = amount;
+            return true;
+        }
+
+        /// <summary>
+        /// Release a dropped resource reservation.
+        /// </summary>
+        public void ReleaseDroppedReservation(Managers.ResourceManager.GameResource type, int amount)
+        {
+            if (amount <= 0) return;
+            if (reservedDropped.ContainsKey(type))
+            {
+                reservedDropped[type] -= amount;
+                if (reservedDropped[type] <= 0)
+                    reservedDropped.Remove(type);
+            }
+        }
+
+        /// <summary>
+        /// Pick up dropped resources from the ground. Returns amount actually picked up.
+        /// </summary>
+        public int PickupDropped(Managers.ResourceManager.GameResource type, int want)
+        {
+            if (want <= 0) return 0;
+            int have = GetDroppedAmount(type);
+            int take = Mathf.Min(want, have);
+            if (take > 0)
+            {
+                droppedResources[type] -= take;
+                if (droppedResources[type] <= 0)
+                    droppedResources.Remove(type);
+                UpdateResourceIcons();
+            }
+            return take;
+        }
+
+        /// <summary>
+        /// Check if any dropped resources exist on this tile.
+        /// </summary>
+        public bool HasDroppedResources()
+        {
+            foreach (var kvp in droppedResources)
+                if (kvp.Value > 0) return true;
+            return false;
+        }
+
         public void RemoveAllResources()
         {
             resourceAmounts.Clear();
+            droppedResources.Clear();
             UpdateResourceIcons();
         }
         private void OnValidate()
@@ -207,6 +370,8 @@ namespace HexGrid
                 {
                     spriteRenderer.enabled = true;
                     spriteRenderer.color = Color.white;
+                    // All tiles use fixed sorting order so they're on the same layer
+                    spriteRenderer.sortingOrder = 100;
                 }
             }
             // Keep highlight sprite in sync with base sprite
@@ -291,15 +456,21 @@ namespace HexGrid
             foreach (var icon in materialsIcons)
                 if (icon != null) DestroyImmediate(icon);
             materialsIcons.Clear();
+            foreach (var icon in droppedIcons)
+                if (icon != null) DestroyImmediate(icon);
+            droppedIcons.Clear();
 
             // Don't display resource icons for unexplored tiles
             if (!isExplored) return;
 
             int foodAmount = GetResourceAmount(Managers.ResourceManager.GameResource.Food);
             int materialsAmount = GetResourceAmount(Managers.ResourceManager.GameResource.Materials);
+            int droppedLogsAmount = GetDroppedAmount(Managers.ResourceManager.GameResource.Materials);
+            
             // Food icons (top row)
             if (foodIcon != null && foodAmount > 0)
             {
+                int baseOrder = spriteRenderer != null ? spriteRenderer.sortingOrder : 0;
                 float spacing = 0.4f;
                 float startX = -((foodAmount - 1) * spacing) / 2f;
                 float y = 0.4f; // top row
@@ -311,26 +482,66 @@ namespace HexGrid
                     go.transform.localScale = Vector3.one;
                     var sr = go.AddComponent<SpriteRenderer>();
                     sr.sprite = foodIcon;
-                    sr.sortingOrder = 10;
+                    sr.sortingOrder = baseOrder + 10;
                     foodIcons.Add(go);
                 }
             }
-            // Materials icons (row below food)
+            // Materials icons (trees scattered naturally on tile)
             if (materialsIcon != null && materialsAmount > 0)
             {
-                float spacing = 0.4f;
-                float startX = -((materialsAmount - 1) * spacing) / 2f;
-                float y = (foodAmount > 0) ? -1f : 0.4f; // below food if food exists, else top row
-                for (int i = 0; i < materialsAmount; i++)
+                // Predefined positions for up to 5 trees to look natural on the hexagonal tile
+                Vector2[] treePositions = new Vector2[]
                 {
-                    var go = new GameObject("MaterialsIcon");
+                    new Vector2(0f, 0f),        // Center
+                    new Vector2(-1.2f, 0.6f),   // Top-left
+                    new Vector2(1.2f, 0.6f),    // Top-right
+                    new Vector2(-1.4f, -0.2f),  // Bottom-left
+                    new Vector2(1.4f, -0.2f)    // Bottom-right
+                };
+                
+                int treesToShow = Mathf.Min(materialsAmount, treePositions.Length);
+                for (int i = 0; i < treesToShow; i++)
+                {
+                    var go = new GameObject("TreeIcon");
                     go.transform.SetParent(transform);
-                    go.transform.localPosition = new Vector3(startX + i * spacing, y, -0.1f);
-                    go.transform.localScale = Vector3.one;
+                    go.transform.localPosition = new Vector3(treePositions[i].x, treePositions[i].y, -0.08f);
+                    go.transform.localScale = Vector3.one * 3f;
                     var sr = go.AddComponent<SpriteRenderer>();
                     sr.sprite = materialsIcon;
-                    sr.sortingOrder = 11;
+                    // Calculate sorting order based on tree's actual world Y position
+                    // Start at 1000 + Y-based offset so trees are always above tiles (which are at 100)
+                    float worldY = transform.position.y + treePositions[i].y;
+                    sr.sortingOrder = 1000 + Mathf.RoundToInt(-worldY * 100f);
                     materialsIcons.Add(go);
+                }
+            }
+            
+            // Dropped logs icons (scattered on ground)
+            if (logIcon != null && droppedLogsAmount > 0)
+            {
+                // Positions for dropped logs (different from trees, closer to ground)
+                Vector2[] logPositions = new Vector2[]
+                {
+                    new Vector2(-0.3f, -0.5f),
+                    new Vector2(0.3f, -0.6f),
+                    new Vector2(0f, -0.3f),
+                    new Vector2(-0.5f, -0.2f),
+                    new Vector2(0.5f, -0.4f)
+                };
+                
+                int logsToShow = Mathf.Min(droppedLogsAmount, logPositions.Length);
+                for (int i = 0; i < logsToShow; i++)
+                {
+                    var go = new GameObject("LogIcon");
+                    go.transform.SetParent(transform);
+                    go.transform.localPosition = new Vector3(logPositions[i].x, logPositions[i].y, -0.09f);
+                    go.transform.localScale = Vector3.one * 1.5f;
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = logIcon;
+                    // Logs are on the ground, below trees but above tiles
+                    float worldY = transform.position.y + logPositions[i].y;
+                    sr.sortingOrder = 800 + Mathf.RoundToInt(-worldY * 100f);
+                    droppedIcons.Add(go);
                 }
             }
         }

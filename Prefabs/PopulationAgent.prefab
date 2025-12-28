@@ -80,7 +80,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 20
+  m_SortingOrder: 1000
   m_Sprite: {fileID: -5406531530088523295, guid: 4bc54420f4feb964dac8c9c58de5bde1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -114,12 +114,21 @@ MonoBehaviour:
   baseGatherMultiplier: 1
   carryCapacity: 0
   gatherMultiplier: 0
+  carriedAmount: 0
+  homeSettlement: {fileID: 0}
+  assignedJobType: 0
+  assignedResource: 1
+  autoRepeatJob: 1
   currentHunger: 20
   maxHunger: 100
   hungerDecayRate: 1
   foodRestorationAmount: 50
   agentState: 0
+  baseHarvestWorkUnits: 1
+  basePickupWorkUnits: 0.5
   statChart: {fileID: 11400000, guid: 8113ae7e10115ff469b7bc07634873f2, type: 2}
+  carriedLogSprite: {fileID: -8060373524520692123, guid: 1e61531896f39ca48bc42669f2fc6d38, type: 3}
+  carriedFoodSprite: {fileID: 1459024109057963326, guid: f1fa55e7a04b2a2448d576159abe68a3, type: 3}
   idleRadius: 0.65
   idleTargetThreshold: 0.001
   idlePickInterval: 2
